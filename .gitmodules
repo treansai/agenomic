@@ -1,0 +1,21 @@
+[submodule "agentlock-cli"]
+	path = agentlock-cli
+	url = https://github.com/treansai/agentlock-cli.git
+[submodule "agentlock-cloud"]
+	path = agentlock-cloud
+	url = https://github.com/treansai/agentlock-cloud.git
+[submodule "agentlock-examples"]
+	path = agentlock-examples
+	url = https://github.com/treansai/agentlock-examples.git
+[submodule "agentlock-python"]
+	path = agentlock-python
+	url = https://github.com/treansai/agentlock-python.git
+[submodule "agentlock-spec"]
+	path = agentlock-spec
+	url = https://github.com/treansai/agentlock-spec.git
+[submodule "agentlock-typescript"]
+	path = agentlock-typescript
+	url = https://github.com/treansai/agentlock-typescript.git
+[submodule "agentlock-web"]
+	path = agentlock-web
+	url = https://github.com/treansai/agentlock-web.git
