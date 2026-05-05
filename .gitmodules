@@ -19,3 +19,6 @@
 [submodule "agentlock-web"]
 	path = agentlock-web
 	url = https://github.com/treansai/agentlock-web.git
+[submodule "agentlock-infra"]
+	path = agentlock-infra
+	url = https://github.com/treansai/agentlock-infra.git
