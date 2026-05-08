@@ -7,6 +7,29 @@ Dates are UTC. Format: [semver-ish release or date] — title.
 
 ## [Unreleased]
 
+### Fixes (cross-repo final review, 2026-05-08)
+
+- **B-1 — Rate limit returns HTTP 429.** `IdentityError::RateLimited` now maps to
+  `AppError::TooManyRequests` (new variant) → `StatusCode::TOO_MANY_REQUESTS`. A `Retry-After: <N>`
+  header is emitted alongside the 429 body. Previously it incorrectly returned 400.
+
+- **B-2 — Signup IP rate limit is 10/hour (clarification).** One draft acceptance criterion (AC-21)
+  said "6th signup/hour → 429". The canonical rate-limit table says 10/hour. The table is canonical;
+  no code change was needed. AC-21 is corrected here for reference.
+
+- **B-3 — `GET /v1/orgs/:org_id/members` returns `{ members: [...] }` wrapper.** The handler now
+  returns `ListMembersResponse { members: Vec<MemberView> }` instead of a bare array. This matches
+  the web client's expected shape and makes the envelope extensible (pagination, total counts, etc.).
+
+- **B-4 — `MemberView` gains `joined_at`.** The membership row's `created_at` is now surfaced as
+  `joined_at: DateTime<Utc>` in the `MemberView` DTO, matching the `OrgMember.joined_at` field
+  already present in the TypeScript types.
+
+- **F-3 — `AuthMeResponse.user` narrowed to `UserSummary` DTO.** A new `UserSummary { id, email,
+  display_name, email_verified_at }` struct in `agentlock-api-types` replaces the raw `User` struct
+  in `AuthMeResponse`. This avoids exposing internal fields (`email_delivery_status`, `role`, etc.)
+  to web clients. The TypeScript side adds a matching `UserSummary` interface to `types.ts`.
+
 ---
 
 ## 2026-05-08 — User-first auth + multi-workspace + Resend email
