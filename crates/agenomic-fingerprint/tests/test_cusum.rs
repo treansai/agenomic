@@ -1,4 +1,4 @@
-use agentlock_fingerprint::{CusumState, DriftDirection, MetricId};
+use agenomic_fingerprint::{CusumState, DriftDirection, MetricId};
 use rand::{rngs::StdRng, SeedableRng};
 use rand_distr::{Distribution, Normal};
 

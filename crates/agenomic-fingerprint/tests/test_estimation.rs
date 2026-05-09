@@ -1,4 +1,4 @@
-use agentlock_fingerprint::{
+use agenomic_fingerprint::{
     estimate_fingerprint, FingerprintError, FingerprintSchema, MetricId, MetricKind, MetricSpec,
     RunResult,
 };

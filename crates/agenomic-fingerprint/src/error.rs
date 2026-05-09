@@ -1,4 +1,4 @@
-//! Error types for the `agentlock-fingerprint` crate.
+//! Error types for the `agenomic-fingerprint` crate.
 
 /// Errors produced by fingerprint estimation, comparison, calibration,
 /// drift detection and signing.

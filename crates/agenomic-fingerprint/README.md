@@ -1,6 +1,6 @@
-# agentlock-fingerprint
+# agenomic-fingerprint
 
-Behavioral fingerprints for AgentLock: empirical estimation, Mahalanobis
+Behavioral fingerprints for Agenomic: empirical estimation, Mahalanobis
 identity tests, sample-size calibration, and CUSUM drift detection.
 
 A `Fingerprint` is the empirical mean and covariance of an agent's metric
@@ -12,7 +12,7 @@ be signed with ed25519.
 ## End-to-end example
 
 ```rust
-use agentlock_fingerprint::{
+use agenomic_fingerprint::{
     estimate_fingerprint, same_agent_test, CusumState, FingerprintSchema,
     MetricId, MetricKind, MetricSpec, RunResult, DEFAULT_ALPHA,
 };

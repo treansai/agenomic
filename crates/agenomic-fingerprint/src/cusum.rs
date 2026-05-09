@@ -128,7 +128,7 @@ impl CusumState {
     ///
     /// # Examples
     /// ```
-    /// use agentlock_fingerprint::{CusumState, MetricId};
+    /// use agenomic_fingerprint::{CusumState, MetricId};
     /// let s = CusumState::new(
     ///     MetricId::new("error_rate"),
     ///     0.05, 0.01, 0.005, 500.0,

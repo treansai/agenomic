@@ -26,7 +26,7 @@ Dates are UTC. Format: [semver-ish release or date] — title.
   already present in the TypeScript types.
 
 - **F-3 — `AuthMeResponse.user` narrowed to `UserSummary` DTO.** A new `UserSummary { id, email,
-  display_name, email_verified_at }` struct in `agentlock-api-types` replaces the raw `User` struct
+  display_name, email_verified_at }` struct in `agenomic-api-types` replaces the raw `User` struct
   in `AuthMeResponse`. This avoids exposing internal fields (`email_delivery_status`, `role`, etc.)
   to web clients. The TypeScript side adds a matching `UserSummary` interface to `types.ts`.
 
@@ -35,9 +35,9 @@ Dates are UTC. Format: [semver-ish release or date] — title.
 ## 2026-05-08 — User-first auth + multi-workspace + Resend email
 
 Covers submodule branches:
-- `agentlock-cloud` @ `feat/user-first-auth-with-email`
-- `agentlock-web` @ `feat/user-first-auth-ui`
-- `agentlock-infra` @ `feat/email-secrets`
+- `agenomic-cloud` @ `feat/user-first-auth-with-email`
+- `agenomic-web` @ `feat/user-first-auth-ui`
+- `agenomic-infra` @ `feat/email-secrets`
 
 ### BREAKING CHANGES
 

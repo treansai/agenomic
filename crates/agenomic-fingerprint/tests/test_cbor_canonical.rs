@@ -1,4 +1,4 @@
-use agentlock_fingerprint::Fingerprint;
+use agenomic_fingerprint::Fingerprint;
 
 fn fp() -> Fingerprint {
     let mut f = Fingerprint {

@@ -38,7 +38,7 @@ fn validate_finite(name: &str, x: f64) -> Result<(), FingerprintError> {
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::{
+/// use agenomic_fingerprint::{
 ///     estimate_fingerprint, FingerprintSchema, MetricId, MetricKind,
 ///     MetricSpec, RunResult,
 /// };

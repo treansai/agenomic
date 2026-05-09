@@ -76,7 +76,7 @@ fn pooled_inverse(f1: &Fingerprint, f2: &Fingerprint, n: usize) -> Result<DMatri
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::{mahalanobis_distance, Fingerprint};
+/// use agenomic_fingerprint::{mahalanobis_distance, Fingerprint};
 /// # let now = chrono::Utc::now();
 /// # let mk = |m: Vec<f64>, c: Vec<f64>| Fingerprint {
 /// #     schema_id: "s".into(), schema_version: 1, agent_id: "a".into(),
@@ -99,12 +99,12 @@ pub fn mahalanobis_distance(f1: &Fingerprint, f2: &Fingerprint) -> Result<f64, F
 ///
 /// Under H₀ (identical underlying behavior), `d_M²` follows a χ²(n) law.
 /// The test rejects H₀ when the p-value falls below `alpha`. The default
-/// significance level used elsewhere in AgentLock is [`DEFAULT_ALPHA`]
+/// significance level used elsewhere in Agenomic is [`DEFAULT_ALPHA`]
 /// (1e-3).
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::{same_agent_test, Fingerprint, DEFAULT_ALPHA};
+/// use agenomic_fingerprint::{same_agent_test, Fingerprint, DEFAULT_ALPHA};
 /// # let now = chrono::Utc::now();
 /// # let mk = |m: Vec<f64>, c: Vec<f64>| Fingerprint {
 /// #     schema_id: "s".into(), schema_version: 1, agent_id: "a".into(),
