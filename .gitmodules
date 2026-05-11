@@ -1,24 +1,24 @@
 [submodule "agenomic-cli"]
 	path = agenomic-cli
-	url = https://github.com/treansai/agentlock-cli.git
+	url = https://github.com/treansai/agenomic-cli.git
 [submodule "agenomic-cloud"]
 	path = agenomic-cloud
-	url = https://github.com/treansai/agentlock-cloud.git
+	url = https://github.com/treansai/agenomic-cloud.git
 [submodule "agenomic-examples"]
 	path = agenomic-examples
-	url = https://github.com/treansai/agentlock-examples.git
+	url = https://github.com/treansai/agenomic-examples.git
 [submodule "agenomic-python"]
 	path = agenomic-python
-	url = https://github.com/treansai/agentlock-python.git
+	url = https://github.com/treansai/agenomic-python.git
 [submodule "agenomic-spec"]
 	path = agenomic-spec
-	url = https://github.com/treansai/agentlock-spec.git
+	url = https://github.com/treansai/agenomic-spec.git
 [submodule "agenomic-typescript"]
 	path = agenomic-typescript
-	url = https://github.com/treansai/agentlock-typescript.git
+	url = https://github.com/treansai/agenomic-typescript.git
 [submodule "agenomic-web"]
 	path = agenomic-web
-	url = https://github.com/treansai/agentlock-web.git
+	url = https://github.com/treansai/agenomic-web.git
 [submodule "agenomic-infra"]
 	path = agenomic-infra
-	url = https://github.com/treansai/agentlock-infra.git
+	url = https://github.com/treansai/agenomic-infra.git
