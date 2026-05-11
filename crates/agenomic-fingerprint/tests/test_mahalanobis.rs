@@ -1,4 +1,4 @@
-use agentlock_fingerprint::{
+use agenomic_fingerprint::{
     estimate_fingerprint, mahalanobis_distance, same_agent_test, FingerprintError,
     FingerprintSchema, MetricId, MetricKind, MetricSpec, RunResult, DEFAULT_ALPHA,
 };
@@ -20,7 +20,7 @@ fn schema(n: usize) -> FingerprintSchema {
     }
 }
 
-fn estimate(rng_seed: u64, schema: &FingerprintSchema, means: &[f64], stds: &[f64]) -> agentlock_fingerprint::Fingerprint {
+fn estimate(rng_seed: u64, schema: &FingerprintSchema, means: &[f64], stds: &[f64]) -> agenomic_fingerprint::Fingerprint {
     let mut rng = StdRng::seed_from_u64(rng_seed);
     let dists: Vec<Normal<f64>> = means
         .iter()
@@ -81,7 +81,7 @@ fn six_sigma_drift_on_one_metric_among_nine_is_rejected() {
 #[test]
 fn singular_covariance_yields_explicit_error() {
     let s = schema(2);
-    let f = agentlock_fingerprint::Fingerprint {
+    let f = agenomic_fingerprint::Fingerprint {
         schema_id: "s".into(),
         schema_version: 1,
         agent_id: "a".into(),

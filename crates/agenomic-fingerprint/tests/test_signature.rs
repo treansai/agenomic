@@ -1,4 +1,4 @@
-use agentlock_fingerprint::{
+use agenomic_fingerprint::{
     sign_fingerprint, verify_signed_fingerprint, Fingerprint,
 };
 use ed25519_dalek::SigningKey;

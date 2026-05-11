@@ -1,23 +1,23 @@
-# AgentLock
+# Agenomic
 
-Umbrella workspace for the AgentLock platform. Each subdirectory is a git submodule pointing to its own repository.
+Umbrella workspace for the Agenomic platform. Each subdirectory is a git submodule pointing to its own repository.
 
 ## Components
 
 | Path | Repo | Description |
 |---|---|---|
-| `agentlock-spec/` | [agentlock-spec](https://github.com/treansai/agentlock-spec) | Protocol specification, RFCs, schemas |
-| `agentlock-cli/` | [agentlock-cli](https://github.com/treansai/agentlock-cli) | Reference CLI (Rust) |
-| `agentlock-cloud/` | _private_ | Cloud services (private) |
-| `agentlock-python/` | [agentlock-python](https://github.com/treansai/agentlock-python) | Python SDK |
-| `agentlock-typescript/` | [agentlock-typescript](https://github.com/treansai/agentlock-typescript) | TypeScript SDK |
-| `agentlock-web/` | [agentlock-web](https://github.com/treansai/agentlock-web) | Web frontend |
-| `agentlock-examples/` | [agentlock-examples](https://github.com/treansai/agentlock-examples) | Example agents and demos |
+| `agenomic-spec/` | [agenomic-spec](https://github.com/treansai/agentlock-spec) | Protocol specification, RFCs, schemas |
+| `agenomic-cli/` | [agenomic-cli](https://github.com/treansai/agentlock-cli) | Reference CLI (Rust) |
+| `agenomic-cloud/` | _private_ | Cloud services (private) |
+| `agenomic-python/` | [agenomic-python](https://github.com/treansai/agentlock-python) | Python SDK |
+| `agenomic-typescript/` | [agenomic-typescript](https://github.com/treansai/agentlock-typescript) | TypeScript SDK |
+| `agenomic-web/` | [agenomic-web](https://github.com/treansai/agentlock-web) | Web frontend |
+| `agenomic-examples/` | [agenomic-examples](https://github.com/treansai/agentlock-examples) | Example agents and demos |
 
 ## Clone
 
 ```sh
-git clone --recurse-submodules https://github.com/treansai/agentlock.git
+git clone --recurse-submodules https://github.com/treansai/agenomic.git
 ```
 
 Or after a regular clone:
@@ -26,7 +26,7 @@ Or after a regular clone:
 git submodule update --init --recursive
 ```
 
-Access to `agentlock-cloud` requires permissions on the private repository.
+Access to `agenomic-cloud` requires permissions on the private repository.
 
 ## Update submodules
 

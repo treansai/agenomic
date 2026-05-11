@@ -13,8 +13,8 @@ pub const CONSERVATIVE_UNBOUNDED_KN: usize = 1000;
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::hoeffding_sample_size;
-/// // Classical AgentLock target ε=0.02, δ=0.01 → 6620.
+/// use agenomic_fingerprint::hoeffding_sample_size;
+/// // Classical Agenomic target ε=0.02, δ=0.01 → 6620.
 /// assert!(hoeffding_sample_size(0.02, 0.01) >= 6620);
 /// ```
 pub fn hoeffding_sample_size(epsilon: f64, delta: f64) -> usize {
@@ -42,7 +42,7 @@ pub fn hoeffding_sample_size(epsilon: f64, delta: f64) -> usize {
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::{
+/// use agenomic_fingerprint::{
 ///     recommended_sample_size, FingerprintSchema, MetricId, MetricKind, MetricSpec,
 /// };
 /// let schema = FingerprintSchema {

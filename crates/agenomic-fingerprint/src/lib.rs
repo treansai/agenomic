@@ -1,6 +1,6 @@
-//! # agentlock-fingerprint
+//! # agenomic-fingerprint
 //!
-//! Behavioral fingerprints for AgentLock agents.
+//! Behavioral fingerprints for Agenomic agents.
 //!
 //! This crate produces and compares the empirical *behavioral fingerprint*
 //! of an agent, defined as a vector of `n` metrics measured by replaying the
@@ -29,7 +29,7 @@
 //! ## End-to-end example
 //!
 //! ```
-//! use agentlock_fingerprint::{
+//! use agenomic_fingerprint::{
 //!     estimate_fingerprint, same_agent_test, CusumState, FingerprintSchema,
 //!     MetricId, MetricKind, MetricSpec, RunResult, DEFAULT_ALPHA,
 //! };

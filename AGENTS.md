@@ -1,15 +1,15 @@
-# AGENTS.md — AgentLock Project Instructions
+# AGENTS.md — Agenomic Project Instructions
 
-You are working on AgentLock, an open-core platform for agent-native release, replay, diff, rollback and compliance.
+You are working on Agenomic, an open-core platform for agent-native release, replay, diff, rollback and compliance.
 
 ## Product vision
 
-AgentLock turns every AI agent release into a portable, signed, replayable and auditable artifact.
+Agenomic turns every AI agent release into a portable, signed, replayable and auditable artifact.
 
 The core idea is not "Git for agents".
 The core idea is: version the proof of agent behavior.
 
-AgentLock has three layers:
+Agenomic has three layers:
 
 1. Open standard:
    - agent-bundle specification
@@ -52,13 +52,13 @@ AgentLock has three layers:
 
 ## Naming conventions
 
-- Product name: AgentLock
+- Product name: Agenomic
 - Bundle format: agent-bundle
 - Main config: genome.yaml
 - Lockfile: agent.lock
-- CLI binary: agentlock
-- Python package: agentlock
-- TypeScript package: @agentlock/sdk
+- CLI binary: agenomic
+- Python package: agenomic
+- TypeScript package: @agenomic/sdk
 
 ## Security rules
 

@@ -1,4 +1,4 @@
-use agentlock_fingerprint::hoeffding_sample_size;
+use agenomic_fingerprint::hoeffding_sample_size;
 
 #[test]
 fn classical_target_yields_at_least_6620() {

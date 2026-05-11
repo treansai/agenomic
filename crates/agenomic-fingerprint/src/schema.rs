@@ -18,7 +18,7 @@ impl MetricId {
     ///
     /// # Examples
     /// ```
-    /// use agentlock_fingerprint::MetricId;
+    /// use agenomic_fingerprint::MetricId;
     /// let id = MetricId::new("accuracy");
     /// assert_eq!(id.0, "accuracy");
     /// ```
@@ -65,7 +65,7 @@ pub struct MetricSpec {
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::{FingerprintSchema, MetricId, MetricKind, MetricSpec};
+/// use agenomic_fingerprint::{FingerprintSchema, MetricId, MetricKind, MetricSpec};
 /// let schema = FingerprintSchema {
 ///     schema_id: "demo-v1".into(),
 ///     version: 1,

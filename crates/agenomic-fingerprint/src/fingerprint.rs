@@ -23,7 +23,7 @@ pub const HASH_DOMAIN: &[u8] = b"AGENTLOCK-FP-v1\x00";
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::Fingerprint;
+/// use agenomic_fingerprint::Fingerprint;
 /// // Fingerprints are typically produced by `estimate_fingerprint`.
 /// let fp = Fingerprint {
 ///     schema_id: "demo-v1".into(),
@@ -79,7 +79,7 @@ impl Fingerprint {
     ///
     /// # Examples
     /// ```
-    /// use agentlock_fingerprint::Fingerprint;
+    /// use agenomic_fingerprint::Fingerprint;
     /// let mut fp = Fingerprint {
     ///     schema_id: "s".into(), schema_version: 1, agent_id: "a".into(),
     ///     computed_at: chrono::Utc::now(),
@@ -161,7 +161,7 @@ fn signing_message(content_hash: &[u8; 32], signer_key_id: &str) -> Vec<u8> {
 ///
 /// # Examples
 /// ```
-/// use agentlock_fingerprint::{sign_fingerprint, verify_signed_fingerprint, Fingerprint};
+/// use agenomic_fingerprint::{sign_fingerprint, verify_signed_fingerprint, Fingerprint};
 /// use ed25519_dalek::SigningKey;
 /// use rand::rngs::OsRng;
 /// let mut csprng = OsRng;

@@ -1,10 +1,10 @@
 [package]
-name = "agentlock-fingerprint"
+name = "agenomic-fingerprint"
 version = "0.1.0"
 edition = "2021"
 license = "Apache-2.0"
-description = "Behavioral fingerprints for AgentLock: empirical estimation, Mahalanobis identity tests, sample-size calibration, and CUSUM drift detection."
-repository = "https://github.com/treansai/agentlock"
+description = "Behavioral fingerprints for Agenomic: empirical estimation, Mahalanobis identity tests, sample-size calibration, and CUSUM drift detection."
+repository = "https://github.com/treansai/agenomic"
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
