@@ -1,0 +1,18 @@
+{
+  "name": "agenomic-sdk",
+  "version": "0.0.1",
+  "description": "Reserved namespace for the Agenomic project (https://github.com/treansai/agenomic). The real package will be published here in a future release.",
+  "main": "index.js",
+  "files": ["index.js", "README.md"],
+  "keywords": ["agenomic", "placeholder"],
+  "author": "Agenomic",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/treansai/agenomic.git"
+  },
+  "homepage": "https://github.com/treansai/agenomic",
+  "bugs": {
+    "url": "https://github.com/treansai/agenomic/issues"
+  }
+}
