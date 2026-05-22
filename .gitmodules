@@ -22,3 +22,7 @@
 [submodule "agenomic-infra"]
 	path = agenomic-infra
 	url = https://github.com/treansai/agenomic-infra.git
+[submodule "agenomic-codedrift"]
+	path = agenomic-codedrift
+	url = https://github.com/treansai/agenomic-codedrift.git
+	branch = main
