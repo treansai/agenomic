@@ -1,0 +1,14 @@
+# Template replay manifest — points the replay engine at the trace
+# fixtures it should re-execute against the current bundle.
+version: 1
+bundle: <agent-name>
+trace_files:
+  - traces/golden.jsonl
+checks:
+  - id: outputs-match-expected
+    description: Every recorded trace's outputs match the expected_outcome block.
+  - id: invariants-hold
+    description: Every invariant in behavior.contract.yaml holds for every trace.
+non_determinism:
+  policy: compare-distributions
+  retries_on_flake: 1

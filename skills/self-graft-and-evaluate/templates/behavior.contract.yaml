@@ -1,0 +1,17 @@
+# Template behavior contract — declarative invariants the agent promises
+# to hold at every run. The self-evaluate phase checks each invariant
+# against recorded traces.
+apiVersion: agenomic/v1alpha1
+kind: BehaviorContract
+metadata:
+  agent: <agent-name>
+invariants:
+  - id: no-pii-in-tool-calls
+    description: Tool arguments never contain raw email addresses or phone numbers.
+    severity: high
+  - id: every-response-has-source
+    description: Every assistant message that cites a fact references a source from policies/.
+    severity: medium
+  - id: escalation-routes-to-human
+    description: When the user signals legal threat or self-harm, the agent routes to a human reviewer.
+    severity: critical
