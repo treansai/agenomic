@@ -1,0 +1,27 @@
+# Template written by the self-graft-and-evaluate skill when
+# `agenomic init` cannot infer enough from the repository.
+# Replace every <PLACEHOLDER>. Do not invent capabilities the code
+# cannot actually perform.
+apiVersion: agenomic/v1alpha1
+kind: AgentGenome
+metadata:
+  name: <agent-name>
+  domain: <domain>
+  owner: <owner>
+  synthetic: false
+summary:
+  objective: <one-sentence statement of what the agent does>
+  non_goals:
+    - <thing the agent must not do>
+capabilities:
+  - <capability_id>
+inputs:
+  - <input_id>
+outputs:
+  - <output_id>
+artifacts:
+  system_prompt: prompts/system.md
+  behavior_contract: behavior.contract.yaml
+  tool_lock: tools/mcp.lock.yaml
+  evals:
+    - evals/replay_manifest.yaml

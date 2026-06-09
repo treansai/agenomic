@@ -1,0 +1,53 @@
+apiVersion: agenomic.skills/v1alpha1
+kind: Skill
+metadata:
+  name: self-graft-and-evaluate
+  version: 0.1.0
+  owner: agenomic-platform
+summary:
+  objective: >
+    Let any AI agent register itself as an Agenomic agent-bundle (self-graft)
+    and then run its own deterministic evaluation (self-evaluate) without
+    human-authored configuration.
+  non_goals:
+    - Replacing human-written behavior contracts in regulated deployments.
+    - Producing signed cloud attestations (use `agenomic attest` for that).
+inputs:
+  - id: workspace
+    description: Path to the repository containing the agent code.
+    type: path
+    required: true
+  - id: language
+    description: Primary language of the agent. Auto-detected if absent.
+    type: enum
+    values: [python, typescript, rust, auto]
+    default: auto
+  - id: agent_name
+    description: Stable identifier for the agent. Defaults to the repo name.
+    type: string
+    required: false
+outputs:
+  - id: bundle_path
+    description: Path to the created `agent-bundle/` directory.
+    type: path
+  - id: report
+    description: Path to the self-evaluation report (JSON).
+    type: path
+  - id: status
+    description: Overall self-evaluation verdict.
+    type: enum
+    values: [pass, fail, error]
+requirements:
+  cli:
+    - agenomic >= 0.1
+  network: none
+  permissions:
+    - read+write inside `workspace`
+phases:
+  - graft       # detect + scaffold bundle + instrument code
+  - evaluate    # replay + contract checks + diff vs. previous bundle
+  - report      # emit JSON report and human summary
+recipes:
+  python: recipes/python.md
+  typescript: recipes/typescript.md
+  rust: recipes/rust.md
