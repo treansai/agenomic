@@ -1,9 +1,6 @@
 [submodule "agenomic-cli"]
 	path = agenomic-cli
 	url = https://github.com/treansai/agenomic-cli.git
-[submodule "agenomic-cloud"]
-	path = agenomic-cloud
-	url = https://github.com/treansai/agenomic-cloud.git
 [submodule "agenomic-examples"]
 	path = agenomic-examples
 	url = https://github.com/treansai/agenomic-examples.git
@@ -16,9 +13,6 @@
 [submodule "agenomic-typescript"]
 	path = agenomic-typescript
 	url = https://github.com/treansai/agenomic-typescript.git
-[submodule "agenomic-web"]
-	path = agenomic-web
-	url = https://github.com/treansai/agenomic-web.git
 [submodule "agenomic-infra"]
 	path = agenomic-infra
 	url = https://github.com/treansai/agenomic-infra.git
