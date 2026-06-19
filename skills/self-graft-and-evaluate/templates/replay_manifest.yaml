@@ -1,14 +1,23 @@
-# Template replay manifest — points the replay engine at the trace
-# fixtures it should re-execute against the current bundle.
+# Template replay manifest — points the replay engine at the trace fixtures it
+# should re-execute against the current bundle. Lives at evals/replay_manifest.yaml.
 version: 1
-bundle: <agent-name>
+bundle: <agent-or-system-name>
 trace_files:
   - traces/golden.jsonl
 checks:
   - id: outputs-match-expected
     description: Every recorded trace's outputs match the expected_outcome block.
   - id: invariants-hold
-    description: Every invariant in behavior.contract.yaml holds for every trace.
+    description: Every rule in behavior.contract.yaml holds for every trace.
+  # ---- v0.2 orchestration checks (RFC 0009) — keep those that apply ----
+  - id: guardrails-respected
+    description: Every external message respects the declared output guardrails.
+  - id: autonomy-envelope-holds
+    description: >
+      No action falls outside autonomy.allowed_actions, and none appears in the
+      system's forbidden_autonomy.
+  - id: escalations-fire
+    description: Declared escalation_rules fire whenever their condition holds.
 non_determinism:
   policy: compare-distributions
   retries_on_flake: 1

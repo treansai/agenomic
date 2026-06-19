@@ -1,6 +1,6 @@
 # Rust recipe — self-graft instrumentation
 
-Apply this only if `agenomic init --dry-run` reports `language: rust`
+Apply this only if `agm init --dry-run` reports `language: rust`
 (detected from `Cargo.toml`).
 
 ## Add the crate
@@ -53,7 +53,7 @@ impls shipped for each supported provider.
 
 ```sh
 cargo run --release -- --input examples/ping.json
-ls agent-bundle/.runs/   # should contain at least one trace envelope
+ls .runs/   # should contain at least one trace envelope (at the bundle root)
 ```
 
 If `.runs/` is empty, check that `trace_agent_run` is awaited on the actual
