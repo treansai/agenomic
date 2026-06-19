@@ -30,7 +30,7 @@ Every skill MUST:
 
 | Skill | Purpose |
 |---|---|
-| [`self-graft-and-evaluate`](./self-graft-and-evaluate/) | Let an agent register itself as an Agenomic agent-bundle and run its own replay/contract checks. |
+| [`self-graft-and-evaluate`](./self-graft-and-evaluate/) | Let an agent register itself as an Agenomic bundle and run its own replay/contract checks. Spec-version aware: single agents (genome), staged workflows, and multi-agent systems (spec v0.2, RFC 0009). |
 
 ## Adding a new skill
 

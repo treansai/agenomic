@@ -1,6 +1,6 @@
 # TypeScript recipe — self-graft instrumentation
 
-Apply this only if `agenomic init --dry-run` reports `language: typescript`
+Apply this only if `agm init --dry-run` reports `language: typescript`
 (detected from `package.json`).
 
 ## Install
@@ -58,7 +58,7 @@ export const run = traceAgentRun(
 
 ```sh
 npx tsx -e "import('./agent').then(m => m.run({ping: 'pong'}))"
-ls agent-bundle/.runs/   # should contain at least one trace envelope
+ls .runs/   # should contain at least one trace envelope (at the bundle root)
 ```
 
 If you use Next.js / a worker runtime, ensure the wrapped `run` is the export

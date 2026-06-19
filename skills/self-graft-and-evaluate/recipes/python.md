@@ -1,6 +1,6 @@
 # Python recipe — self-graft instrumentation
 
-Apply this only if `agenomic init --dry-run` reports `language: python`.
+Apply this only if `agm init --dry-run` reports `language: python`.
 
 ## Install
 
@@ -58,7 +58,7 @@ of the call; `instrument_anthropic` makes every `messages.create` produce a
 
 ```sh
 python -c "from agent import run; run({'ping': 'pong'})"
-ls agent-bundle/.runs/   # should contain at least one trace envelope
+ls .runs/   # should contain at least one trace envelope (at the bundle root)
 ```
 
 If `.runs/` is empty, the decorator is not on the entry point actually being

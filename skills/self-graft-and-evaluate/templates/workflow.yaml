@@ -1,0 +1,85 @@
+# Fallback workflow manifest (spec 0.2, RFC 0009). `agm init` / `agm update`
+# auto-detect and write workflows/<slug>.yaml when they can; hand-write this
+# only when detection cannot, and replace every <PLACEHOLDER>.
+# Validate with: agm validate workflows/<name>.yaml
+#
+# A workflow is a DAG of `steps` linked by `depends_on`. Steps with identical
+# dependencies may run in parallel; any step may carry a `when` guard. Six step
+# types: agent | tool | human | wait | workflow | loop.
+spec_version: '0.2'
+
+workflow:
+  id: workflow://<org>/<name>       # workflow://<org>/<name>
+  name: <Workflow Name>
+  domain: <domain>                  # e.g. claims, support, onboarding
+  criticality: medium               # low | medium | high | critical
+  version: 1.0.0
+  description: <one-sentence statement of what this workflow does>
+
+# Optional, non-normative hint about the runtime that executes this workflow.
+engine:
+  kind: <temporal|langgraph|crewai|autogen|custom>
+
+triggers:
+  - type: api                       # api | event | schedule | signal | manual
+    description: <how the workflow starts>
+
+inputs:
+  - name: <input_field>
+    required: true
+outputs:
+  - name: <output_field>
+
+# Only the schema of the shared context is referenced; runtime state is never
+# bundled (RFC 0006).
+state:
+  schema_path: state/state.schema.yaml
+  schema_version: 1.0.0
+
+steps:
+  - id: extract                     # ^[a-z][a-z0-9_]*$, unique within the workflow
+    type: agent
+    agent: agent://<org>/<name>
+    skill: <optional_skill_id>
+    inputs: [<input_field>]
+    outputs: [<state_field>]
+    retry: { max_attempts: 3, backoff: exponential, initial_interval: 2s }
+    timeout: 60s
+
+  - id: route
+    type: tool                      # deterministic step — replayed exactly
+    tool: { name: <function_name>, protocol: local, version: 1.0.0 }
+    depends_on: [extract]
+    inputs: [<state_field>]
+    outputs: [requires_human]
+    on_error: escalate              # fail | continue | escalate
+
+  - id: human_review
+    type: human
+    depends_on: [route]
+    when: "requires_human == true"  # guard: skipped when false
+    gate:
+      role: <human_role>            # e.g. claims_handler, risk_officer
+      action: review                # approve | review | input | decide
+      sla: 48h
+      on_timeout: escalate          # escalate | fail | continue
+      escalation_route: <role_or_queue>
+
+  - id: respond
+    type: agent
+    agent: agent://<org>/<name>
+    depends_on: [route]
+    when: "requires_human == false"
+    outputs: [final_message]
+
+# Long-running workflows can suspend until external signals arrive:
+#  - id: await_documents
+#    type: wait
+#    wait_for: { signals: [documents_received], mode: any, timeout: 30d, on_timeout: escalate }
+
+escalation_rules:
+  - condition: <free_form_condition>
+    route: <human_role_or_queue>
+
+labels:
+  team: <team>

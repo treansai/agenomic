@@ -1,0 +1,69 @@
+# Fallback multi-agent system manifest (spec 0.2, RFC 0009). `agm init` /
+# `agm update` auto-detect and write system.yaml when they can; hand-write this
+# only when detection cannot, and replace every <PLACEHOLDER>.
+# Validate with: agm validate system.yaml
+#
+# A system binds system-local `role` names to `agent://` identities, declares
+# the orchestration topology connecting them, and sets the governance envelope.
+# `forbidden_autonomy` overrides every member's `allowed_actions`.
+spec_version: '0.2'
+
+system:
+  id: system://<org>/<name>         # system://<org>/<name>
+  name: <System Name>
+  domain: <domain>                  # e.g. claims, support, trading-risk
+  criticality: medium               # low | medium | high | critical
+  version: 1.0.0
+  description: <one-sentence statement of what this system does>
+
+agents:
+  - role: intake                    # ^[a-z][a-z0-9_]*$, unique within the system
+    id: agent://<org>/<intake-agent>
+    genome: ../<intake-agent>/genome.yaml   # optional; cross-validated when present
+    description: <what this member does>
+    autonomy:
+      allowed_actions: [<action>]
+  - role: decision
+    id: agent://<org>/<decision-agent>
+    description: <what this member does>
+    autonomy:
+      allowed_actions: [<action>]
+      forbidden_actions: [<action_this_member_must_never_take>]
+
+orchestration:
+  style: graph                      # pipeline | graph | supervisor | swarm | custom
+  engine:                           # optional, non-normative runtime hint
+    kind: <temporal|langgraph|crewai|autogen|custom>
+  entrypoint: intake                # role that receives the initial input
+  edges:                            # graph/pipeline styles; END is the terminal vertex
+    - { from: intake, to: decision }
+    - { from: decision, to: END, when: "auto_approval == true" }
+    - { from: decision, to: END, when: "auto_approval == false" }
+
+# Only the schema of shared state is referenced; runtime state is never bundled.
+shared_state:
+  schema_path: state/state.schema.yaml
+  schema_version: 1.0.0
+
+signals:
+  - name: <signal_name>             # e.g. documents_received, human_decision_applied
+    description: <what arriving this signal resumes>
+
+workflows:
+  - id: workflow://<org>/<name>
+    path: workflows/<name>.yaml     # must exist and validate
+    description: <what this owned workflow does>
+
+communication_guardrails:
+  - <named_guardrail>               # e.g. formal_address, no_payment_commitment
+
+escalation_rules:
+  - condition: <free_form_condition>
+    route: <human_role_or_queue>
+
+# Actions NO member may ever take autonomously, regardless of per-member autonomy.
+forbidden_autonomy:
+  - <system_wide_forbidden_action>
+
+labels:
+  team: <team>

@@ -2,16 +2,18 @@ apiVersion: agenomic.skills/v1alpha1
 kind: Skill
 metadata:
   name: self-graft-and-evaluate
-  version: 0.1.0
+  version: 0.2.0
   owner: agenomic-platform
 summary:
   objective: >
-    Let any AI agent register itself as an Agenomic agent-bundle (self-graft)
-    and then run its own deterministic evaluation (self-evaluate) without
-    human-authored configuration.
+    Let any AI agent register itself as an Agenomic bundle (self-graft) and
+    then run its own deterministic evaluation (self-evaluate) without
+    human-authored configuration. Spec-version aware: handles single agents
+    (genome), staged workflows, and multi-agent systems (spec v0.2, RFC 0009).
   non_goals:
+    - Executing workflows or multi-agent systems (that is the engine's job).
     - Replacing human-written behavior contracts in regulated deployments.
-    - Producing signed cloud attestations (use `agenomic attest` for that).
+    - Producing signed cloud attestations (use `agm attest` for that).
 inputs:
   - id: workspace
     description: Path to the repository containing the agent code.
@@ -26,10 +28,23 @@ inputs:
     description: Stable identifier for the agent. Defaults to the repo name.
     type: string
     required: false
+  - id: bundle_dir
+    description: >
+      Directory treated as the bundle root, where manifests are written and
+      validated. Defaults to the workspace (the CLI scaffolds in place).
+    type: path
+    required: false
 outputs:
   - id: bundle_path
-    description: Path to the created `agent-bundle/` directory.
+    description: Path to the bundle root that was created or updated.
     type: path
+  - id: kind
+    description: Detected bundle shape.
+    type: enum
+    values: [agent, workflow, system]
+  - id: spec_version
+    description: Spec version of the primary manifest (e.g. 0.1, 0.2).
+    type: string
   - id: report
     description: Path to the self-evaluation report (JSON).
     type: path
@@ -39,15 +54,21 @@ outputs:
     values: [pass, fail, error]
 requirements:
   cli:
-    - agenomic >= 0.1
+    - agenomic >= 0.2
   network: none
   permissions:
     - read+write inside `workspace`
 phases:
-  - graft       # detect + scaffold bundle + instrument code
-  - evaluate    # replay + contract checks + diff vs. previous bundle
+  - graft       # detect + scaffold bundle (genome/workflow/system) + instrument
+  - evaluate    # replay + contract checks + orchestration checks + diff
   - report      # emit JSON report and human summary
 recipes:
   python: recipes/python.md
   typescript: recipes/typescript.md
   rust: recipes/rust.md
+templates:
+  genome: templates/genome.yaml
+  workflow: templates/workflow.yaml
+  system: templates/system.yaml
+  behavior_contract: templates/behavior.contract.yaml
+  replay_manifest: templates/replay_manifest.yaml
