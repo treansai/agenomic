@@ -1,3 +1,3 @@
 [workspace]
 resolver = "2"
-members = ["crates/agenomic-fingerprint"]
+members = ["crates/agenomic-fingerprint", "crates/agenomic-metrics"]
