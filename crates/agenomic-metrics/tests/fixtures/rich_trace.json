@@ -1,0 +1,190 @@
+{
+  "spec_version": "agenomic/v0.3",
+  "run_id": "run_rich",
+  "agent": {
+    "agent_id": "agent://acme/claims",
+    "agent_version": "1.0.0",
+    "genome_version": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "runtime": {
+      "name": "node",
+      "version": "22.0.0",
+      "adapter_version": "0.3.0"
+    }
+  },
+  "llm": {
+    "provider": "openai",
+    "model": "gpt-x",
+    "model_version": "2026-06-01",
+    "temperature": 0.2,
+    "top_p": 1,
+    "seed": 42
+  },
+  "components": {
+    "prompt_version": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "policy_version": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+    "memory_version": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+    "knowledge_version": "sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "tool_versions": {
+      "search": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+    }
+  },
+  "input": {
+    "hash": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+    "redacted_payload": {
+      "text": "[redacted]"
+    },
+    "classification": [
+      "internal"
+    ]
+  },
+  "output": {
+    "hash": "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+    "redacted_payload": {
+      "answer": "approved"
+    },
+    "classification": [
+      "internal"
+    ],
+    "semantic_signature": "sig://semantic/1"
+  },
+  "events": [
+    {
+      "event_id": "evt_01",
+      "type": "run.started",
+      "timestamp": "2026-06-22T00:00:00Z",
+      "actor": {
+        "kind": "system",
+        "id": "system://agenomic/runtime"
+      },
+      "payload_hash": "blake3:0000000000000000000000000000000000000000000000000000000000000000",
+      "prev_event_hash": "blake3:0000000000000000000000000000000000000000000000000000000000000000",
+      "side_inputs": {
+        "captured": false
+      },
+      "event_hash": "blake3:fadd62d86f2b5abfd5d76af8eb165ffbfd3fc45bb2962d6a07473cc5515057cc"
+    },
+    {
+      "event_id": "evt_02",
+      "type": "llm.requested",
+      "timestamp": "2026-06-22T00:00:00Z",
+      "actor": {
+        "kind": "agent",
+        "id": "agent://acme/claims"
+      },
+      "payload_hash": "blake3:0000000000000000000000000000000000000000000000000000000000000000",
+      "prev_event_hash": "blake3:fadd62d86f2b5abfd5d76af8eb165ffbfd3fc45bb2962d6a07473cc5515057cc",
+      "policy_checks": [
+        {
+          "policy": "sha256:1111111111111111111111111111111111111111111111111111111111111111",
+          "status": "pass"
+        }
+      ],
+      "risk_score": 0.2,
+      "event_hash": "blake3:d12041aaa84da64a21ed617154ca7829242af2bb6f431a8a958d63b1596a6cbd"
+    },
+    {
+      "event_id": "evt_03",
+      "type": "llm.responded",
+      "timestamp": "2026-06-22T00:00:00Z",
+      "actor": {
+        "kind": "agent",
+        "id": "agent://acme/claims"
+      },
+      "payload_hash": "blake3:0000000000000000000000000000000000000000000000000000000000000000",
+      "prev_event_hash": "blake3:d12041aaa84da64a21ed617154ca7829242af2bb6f431a8a958d63b1596a6cbd",
+      "provenance": {
+        "used": [
+          "evt_02"
+        ],
+        "evidence_units": [
+          "evidence://unit/1"
+        ]
+      },
+      "event_hash": "blake3:4a35d1a97c859f74916090b831f059b68398ea231dd34cbad786fc64ac9455a8"
+    },
+    {
+      "event_id": "evt_04",
+      "type": "run.completed",
+      "timestamp": "2026-06-22T00:00:00Z",
+      "actor": {
+        "kind": "system",
+        "id": "system://agenomic/runtime"
+      },
+      "payload_hash": "blake3:0000000000000000000000000000000000000000000000000000000000000000",
+      "prev_event_hash": "blake3:4a35d1a97c859f74916090b831f059b68398ea231dd34cbad786fc64ac9455a8",
+      "event_hash": "blake3:e180d6b98f25d139a09618f6a639f915bba1fd148f07410626fef67d1ac86202"
+    }
+  ],
+  "execution_graph": {
+    "nodes": [
+      {
+        "id": "evt_01",
+        "kind": "event"
+      },
+      {
+        "id": "evt_02",
+        "kind": "event"
+      },
+      {
+        "id": "evt_03",
+        "kind": "event"
+      },
+      {
+        "id": "evt_04",
+        "kind": "event"
+      },
+      {
+        "id": "out_01",
+        "kind": "artifact"
+      }
+    ],
+    "edges": [
+      {
+        "from": "evt_01",
+        "to": "evt_02",
+        "type": "caused_by"
+      },
+      {
+        "from": "evt_02",
+        "to": "evt_03",
+        "type": "caused_by"
+      },
+      {
+        "from": "evt_03",
+        "to": "out_01",
+        "type": "produced"
+      },
+      {
+        "from": "evt_04",
+        "to": "out_01",
+        "type": "supported_by"
+      }
+    ]
+  },
+  "risk_scores": [
+    {
+      "name": "runtime",
+      "score": 0.2
+    }
+  ],
+  "compliance_checks": [
+    {
+      "control_id": "EUAI-12-LOG-001",
+      "status": "pass"
+    }
+  ],
+  "alignment_checks": [
+    {
+      "name": "policy-alignment",
+      "status": "pass"
+    }
+  ],
+  "environment_snapshot": {
+    "os": "linux"
+  },
+  "integrity": {
+    "run_merkle_root": "blake3-merkle-v1:d1bd32baefdd242711f7b7da3e32c252af23d809e7ee3003282a0caf9646c51b",
+    "signed_by": "key://org/acme",
+    "signature": "ed25519:example"
+  }
+}

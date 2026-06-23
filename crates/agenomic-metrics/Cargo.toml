@@ -1,0 +1,19 @@
+[package]
+name = "agenomic-metrics"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Pure, deterministic agentic evaluation metrics for Agenomic: trace completeness, replay fidelity, policy adherence, behavioral drift (Jensen-Shannon), tool risk, and more. Reuses agenomic-fingerprint for the shared statistical toolkit (Mahalanobis, chi-square, CUSUM, Hoeffding) without duplicating it."
+repository = "https://github.com/treansai/agenomic"
+keywords = ["agent", "metrics", "drift", "replay", "compliance"]
+categories = ["science", "development-tools"]
+
+[dependencies]
+agenomic-fingerprint = { path = "../agenomic-fingerprint" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+thiserror = "1"
+
+[dev-dependencies]
+proptest = "1"
+approx = "0.5"
