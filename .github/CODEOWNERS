@@ -1,0 +1,11 @@
+# Public Core repository. Rulesets on `main` and on `core-v*` tags enforce
+# review and CI (scripts/github/apply-rulesets.sh); this file names who must
+# review the areas that define what is public and how it is released.
+*                               @treansai/core-maintainers
+/.github/                       @treansai/platform @treansai/security
+/scripts/                       @treansai/platform @treansai/security
+/crates/                        @treansai/core-maintainers
+/Cargo.toml                     @treansai/core-maintainers
+/Cargo.lock                     @treansai/core-maintainers
+/.gitmodules                    @treansai/platform @treansai/security
+/docs/architecture/             @treansai/platform
