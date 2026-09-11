@@ -123,7 +123,7 @@ pub fn estimate_fingerprint(
         ids.dedup();
         ids.len()
     };
-    let runs_per_probe = if probes_count == 0 { 0 } else { kn / probes_count };
+    let runs_per_probe = kn.checked_div(probes_count).unwrap_or(0);
 
     let mut fp = Fingerprint {
         schema_id: schema.schema_id.clone(),

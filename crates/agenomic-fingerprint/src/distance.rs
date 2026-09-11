@@ -49,7 +49,11 @@ fn require_same_shape(f1: &Fingerprint, f2: &Fingerprint) -> Result<usize, Finge
     Ok(n)
 }
 
-fn pooled_inverse(f1: &Fingerprint, f2: &Fingerprint, n: usize) -> Result<DMatrix<f64>, FingerprintError> {
+fn pooled_inverse(
+    f1: &Fingerprint,
+    f2: &Fingerprint,
+    n: usize,
+) -> Result<DMatrix<f64>, FingerprintError> {
     let mut data = vec![0.0_f64; n * n];
     for i in 0..n {
         for j in 0..n {
@@ -121,7 +125,9 @@ pub fn same_agent_test(
     alpha: f64,
 ) -> Result<SameAgentResult, FingerprintError> {
     if !(0.0 < alpha && alpha < 1.0) {
-        return Err(FingerprintError::InvalidValue { field: "alpha".into() });
+        return Err(FingerprintError::InvalidValue {
+            field: "alpha".into(),
+        });
     }
     let n = require_same_shape(f1, f2)?;
     let inv = pooled_inverse(f1, f2, n)?;
@@ -129,8 +135,8 @@ pub fn same_agent_test(
     let d_squared = (delta.transpose() * &inv * &delta)[(0, 0)].max(0.0);
     let d_mahalanobis = d_squared.sqrt();
 
-    let chi2 = ChiSquared::new(n as f64)
-        .map_err(|e| FingerprintError::Statistics(e.to_string()))?;
+    let chi2 =
+        ChiSquared::new(n as f64).map_err(|e| FingerprintError::Statistics(e.to_string()))?;
     let p_value = 1.0 - chi2.cdf(d_squared);
     let threshold_at_alpha = chi2.inverse_cdf(1.0 - alpha).sqrt();
     let passes = p_value > alpha;

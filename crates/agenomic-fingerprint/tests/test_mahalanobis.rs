@@ -20,7 +20,12 @@ fn schema(n: usize) -> FingerprintSchema {
     }
 }
 
-fn estimate(rng_seed: u64, schema: &FingerprintSchema, means: &[f64], stds: &[f64]) -> agenomic_fingerprint::Fingerprint {
+fn estimate(
+    rng_seed: u64,
+    schema: &FingerprintSchema,
+    means: &[f64],
+    stds: &[f64],
+) -> agenomic_fingerprint::Fingerprint {
     let mut rng = StdRng::seed_from_u64(rng_seed);
     let dists: Vec<Normal<f64>> = means
         .iter()

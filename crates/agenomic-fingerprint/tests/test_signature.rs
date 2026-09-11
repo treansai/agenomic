@@ -1,6 +1,4 @@
-use agenomic_fingerprint::{
-    sign_fingerprint, verify_signed_fingerprint, Fingerprint,
-};
+use agenomic_fingerprint::{sign_fingerprint, verify_signed_fingerprint, Fingerprint};
 use ed25519_dalek::SigningKey;
 use rand::rngs::OsRng;
 
@@ -14,9 +12,7 @@ fn fp() -> Fingerprint {
         runs_per_probe: 100,
         mean: vec![0.85, 110.0, 0.05],
         variance: vec![0.0025, 144.0, 1.0e-5],
-        covariance: vec![
-            0.0025, 0.0, 0.0, 0.0, 144.0, 0.0, 0.0, 0.0, 1.0e-5,
-        ],
+        covariance: vec![0.0025, 0.0, 0.0, 0.0, 144.0, 0.0, 0.0, 0.0, 1.0e-5],
         content_hash: [0u8; 32],
     }
 }

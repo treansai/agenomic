@@ -56,7 +56,11 @@ pub struct CusumState {
 ///
 /// Returns +∞ when the formula degenerates (e.g. `k = 0`).
 fn siegmund_arl(h: f64, k: f64, sigma_0: f64) -> f64 {
-    if !(h.is_finite() && k.is_finite() && sigma_0.is_finite()) || sigma_0 <= 0.0 || k <= 0.0 || h <= 0.0 {
+    if !(h.is_finite() && k.is_finite() && sigma_0.is_finite())
+        || sigma_0 <= 0.0
+        || k <= 0.0
+        || h <= 0.0
+    {
         return f64::INFINITY;
     }
     let b = h / sigma_0;
@@ -143,7 +147,9 @@ impl CusumState {
         target_arl_no_drift: f64,
     ) -> Result<Self, FingerprintError> {
         if !mu_0.is_finite() {
-            return Err(FingerprintError::InvalidValue { field: "mu_0".into() });
+            return Err(FingerprintError::InvalidValue {
+                field: "mu_0".into(),
+            });
         }
         if !sigma_0.is_finite() || sigma_0 <= 0.0 {
             return Err(FingerprintError::InvalidValue {
@@ -151,7 +157,9 @@ impl CusumState {
             });
         }
         if !delta.is_finite() || delta <= 0.0 {
-            return Err(FingerprintError::InvalidValue { field: "delta".into() });
+            return Err(FingerprintError::InvalidValue {
+                field: "delta".into(),
+            });
         }
         let k = delta / 2.0;
         let h = calibrate_h_for_arl(k, sigma_0, target_arl_no_drift)?;
