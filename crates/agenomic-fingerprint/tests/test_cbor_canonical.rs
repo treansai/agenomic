@@ -10,9 +10,7 @@ fn fp() -> Fingerprint {
         runs_per_probe: 50,
         mean: vec![0.5, 0.6, 0.7],
         variance: vec![0.01, 0.02, 0.005],
-        covariance: vec![
-            0.01, 0.001, 0.0, 0.001, 0.02, 0.0, 0.0, 0.0, 0.005,
-        ],
+        covariance: vec![0.01, 0.001, 0.0, 0.001, 0.02, 0.0, 0.0, 0.0, 0.005],
         content_hash: [0u8; 32],
     };
     f.content_hash = f.compute_content_hash().unwrap();

@@ -7,14 +7,7 @@ fn arl_under_no_drift_is_close_to_target() {
     let mu0 = 0.0_f64;
     let sigma0 = 1.0_f64;
     let target_arl = 200.0_f64;
-    let detector = CusumState::new(
-        MetricId::new("x"),
-        mu0,
-        sigma0,
-        1.0,
-        target_arl,
-    )
-    .unwrap();
+    let detector = CusumState::new(MetricId::new("x"), mu0, sigma0, 1.0, target_arl).unwrap();
 
     let mut rng = StdRng::seed_from_u64(0xC05_F1A);
     let dist = Normal::new(mu0, sigma0).unwrap();
@@ -34,8 +27,7 @@ fn arl_under_no_drift_is_close_to_target() {
         }
         run_lengths.push(detected.unwrap_or(max_samples));
     }
-    let mean_arl: f64 =
-        run_lengths.iter().map(|x| *x as f64).sum::<f64>() / n_runs as f64;
+    let mean_arl: f64 = run_lengths.iter().map(|x| *x as f64).sum::<f64>() / n_runs as f64;
     // Siegmund's approximation is a leading-order asymptotic and is known to
     // underestimate ARL by a meaningful factor at moderate h. Combined with
     // the bilateral test (which roughly halves the joint ARL), the observed
@@ -90,8 +82,7 @@ fn upward_drift_is_detected_quickly() {
 
 #[test]
 fn reset_clears_running_state() {
-    let mut d =
-        CusumState::new(MetricId::new("x"), 0.0, 1.0, 1.0, 200.0).unwrap();
+    let mut d = CusumState::new(MetricId::new("x"), 0.0, 1.0, 1.0, 200.0).unwrap();
     for _ in 0..10 {
         let _ = d.update(2.0).unwrap();
     }
@@ -103,8 +94,7 @@ fn reset_clears_running_state() {
 
 #[test]
 fn cbor_roundtrip_preserves_state() {
-    let mut d =
-        CusumState::new(MetricId::new("x"), 0.5, 0.1, 0.05, 300.0).unwrap();
+    let mut d = CusumState::new(MetricId::new("x"), 0.5, 0.1, 0.05, 300.0).unwrap();
     for v in [0.55, 0.6, 0.62, 0.4] {
         let _ = d.update(v).unwrap();
     }

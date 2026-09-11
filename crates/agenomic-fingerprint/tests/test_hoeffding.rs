@@ -19,7 +19,10 @@ fn smaller_epsilon_strictly_increases_sample_size() {
     let mut prev = 0usize;
     for eps in [0.10, 0.05, 0.02, 0.01, 0.005] {
         let kn = hoeffding_sample_size(eps, 0.01);
-        assert!(kn > prev, "kn={kn} not greater than prev={prev} at eps={eps}");
+        assert!(
+            kn > prev,
+            "kn={kn} not greater than prev={prev} at eps={eps}"
+        );
         prev = kn;
     }
 }
