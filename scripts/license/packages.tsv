@@ -1,0 +1,34 @@
+# Licence classification of every Agenomic package. Single source of truth for
+# scripts/license/*.sh and for docs/legal/open-source-license.md.
+#
+# path         manifest of the package, relative to the repository root, or the
+#              component name for a private component that has no path here
+# edition      oss | cloud
+# licence      SPDX identifier for oss, `proprietary` for cloud
+# published    registry the package is published to, or `no`
+# licence_file whether a LICENSE file is expected next to the manifest
+#
+# A cloud row never has a path in this repository: check-public-packages.sh
+# fails if one appears.
+#
+# path	edition	licence	published	licence_file
+crates/agenomic-fingerprint/Cargo.toml	oss	AGPL-3.0-only	crates.io	yes
+crates/agenomic-metrics/Cargo.toml	oss	AGPL-3.0-only	crates.io	yes
+agenomic-cli/Cargo.toml	oss	AGPL-3.0-only	crates.io	yes
+agenomic-codedrift/pyproject.toml	oss	AGPL-3.0-only	no	yes
+agenomic-examples/pyproject.toml	oss	AGPL-3.0-only	no	yes
+agenomic-python/pyproject.toml	oss	Apache-2.0	pypi	yes
+agenomic-typescript/package.json	oss	MIT	npm	yes
+agenomic-spec/package.json	oss	Apache-2.0	no	yes
+scripts/placeholders/npm/agenomic/package.json	oss	AGPL-3.0-only	npm	no
+scripts/placeholders/npm/agenomic-cli/package.json	oss	AGPL-3.0-only	npm	no
+scripts/placeholders/npm/agenomic-sdk/package.json	oss	MIT	npm	no
+scripts/placeholders/npm/agenomic-typescript/package.json	oss	MIT	npm	no
+scripts/placeholders/pypi/agenomic/pyproject.toml	oss	AGPL-3.0-only	pypi	no
+scripts/placeholders/pypi/agenomic-cli/pyproject.toml	oss	AGPL-3.0-only	pypi	no
+scripts/placeholders/pypi/agenomic-python/pyproject.toml	oss	Apache-2.0	pypi	no
+scripts/placeholders/pypi/agenomic-sdk/pyproject.toml	oss	Apache-2.0	pypi	no
+agenomic-cloud	cloud	proprietary	no	no
+agenomic-web	cloud	proprietary	no	no
+agenomic-governance-agents	cloud	proprietary	no	no
+agenomic-infra	cloud	proprietary	no	no

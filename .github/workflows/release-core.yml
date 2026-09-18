@@ -38,6 +38,7 @@ jobs:
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-targets -- -D warnings
       - run: cargo test --workspace
+      - run: ./scripts/license/check-all.sh
       - run: ./scripts/ci/proprietary-leak-check.sh
       - name: gitleaks (release tree)
         run: docker run --rm -v "$PWD:/repo" -w /repo ghcr.io/gitleaks/gitleaks:v8.30.0@sha256:691af3c7c5a48b16f187ce3446d5f194838f91238f27270ed36eef6359a574d9 git --no-banner --redact=100 --exit-code 1 /repo
@@ -60,6 +61,15 @@ jobs:
           mkdir -p dist
           git archive --format=tar.gz --prefix="agenomic-core-${TAG#core-v}/" -o "dist/agenomic-core-${TAG#core-v}.tar.gz" HEAD
           (cd dist && sha256sum ./*.tar.gz > checksums.txt)
+      - name: the source archive carries the licence
+        run: |
+          set -euo pipefail
+          tar -tzf dist/*.tar.gz > dist/archive.list
+          grep -qE '^[^/]+/LICENSE$' dist/archive.list
+          tar -xzOf dist/*.tar.gz --wildcards '*/LICENSE' > dist/archive.LICENSE
+          . ./scripts/license/lib.sh
+          is_agpl_text dist/archive.LICENSE
+          rm -f dist/archive.list dist/archive.LICENSE
       - name: third-party licences
         run: ./scripts/release/third-party-licenses.sh --output dist/THIRD_PARTY_LICENSES.md
       - name: SBOM (SPDX)
