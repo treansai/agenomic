@@ -11,6 +11,16 @@ Minimal stub packages that claim the `agenomic*` names on PyPI and npm so nobody
 
 Verified all 8 names are currently available (HTTP 404 on the registry).
 
+## Licences
+
+Each placeholder declares the licence of the package it reserves, not a single
+project-wide value: `agenomic-cli` is `AGPL-3.0-only` (the CLI), npm
+`agenomic-sdk` / `agenomic-typescript` are `MIT` and PyPI `agenomic-sdk` /
+`agenomic-python` are `Apache-2.0` (the SDKs stay permissive). The umbrella
+name `agenomic` carries the project licence, `AGPL-3.0-only`; if it is later
+published as an SDK alias, set it to that SDK's licence before publishing.
+`scripts/license/check-license-metadata.sh` enforces these values.
+
 ## Auth
 
 ### PyPI

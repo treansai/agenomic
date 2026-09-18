@@ -11,13 +11,19 @@ repositories:
 
 | Component | Repository | Licence | Contents |
 |---|---|---|---|
-| Specification | `agenomic-spec` | see repository | agent-bundle spec, genome.yaml, agent.lock, trace and attestation schemas, RFCs |
-| CLI | `agenomic-cli` | see repository | `agenomic` / `agm` binaries, local validate, replay, diff, RMP client |
-| Python SDK | `agenomic-python` | see repository | tracing and ATEP instrumentation |
+| Specification | `agenomic-spec` | Apache-2.0 | agent-bundle spec, genome.yaml, agent.lock, trace and attestation schemas, RFCs |
+| CLI | `agenomic-cli` | AGPL-3.0-only | `agenomic` / `agm` binaries, local validate, replay, diff, RMP client |
+| Python SDK | `agenomic-python` | Apache-2.0 | tracing and ATEP instrumentation |
 | TypeScript SDK | `agenomic-typescript` | MIT | tracing instrumentation |
-| Examples | `agenomic-examples` | see repository | example agents |
-| Code drift | `agenomic-codedrift` | see repository | drift detection job |
-| Shared crates | `crates/agenomic-fingerprint`, `crates/agenomic-metrics` | Apache-2.0 | behavioural fingerprints, metrics |
+| Examples | `agenomic-examples` | AGPL-3.0-only | example agents |
+| Code drift | `agenomic-codedrift` | AGPL-3.0-only | drift detection job |
+| Shared crates | `crates/agenomic-fingerprint`, `crates/agenomic-metrics` | AGPL-3.0-only | behavioural fingerprints, metrics |
+
+The Community edition is AGPL-3.0-only. The SDKs and the specification stay
+permissive (`Apache-2.0`, `MIT`) because they are embedded in user
+applications and consumed by third-party generators; relicensing them would
+push a copyleft obligation onto every instrumented application.
+`scripts/license/` is the machine-readable source of truth and the CI gate.
 
 Everything a contributor needs is here: clone, `cargo test`, `cargo build`,
 the CLI and SDK test suites. No account, private registry, Cloud secret or
@@ -29,6 +35,10 @@ The managed control plane (Agenomic Cloud), the product web application,
 the governance agents and the deployment infrastructure live in private
 repositories of the same organisation. They **consume** this repository;
 they never push to it.
+
+They are proprietary: no public package, manifest or artifact of this
+repository may declare them, and the OSS licence checks never reclassify a
+private component as AGPL.
 
 ## Who owns what
 
@@ -81,7 +91,13 @@ be merged automatically once all checks pass.
 git clone --recurse-submodules https://github.com/treansai/agenomic.git
 cargo test --workspace                 # shared crates
 ./scripts/ci/proprietary-leak-check.sh # what CI runs on your pull request
+./scripts/license/check-all.sh          # licence metadata and OSS/Cloud boundary
 ```
 
 Pull requests from forks run the same checks with no secret. Reviews follow
 `.github/CODEOWNERS`.
+
+By contributing to an Agenomic Community repository, you agree that your
+contribution may be distributed under that repository's licence, as recorded
+in `scripts/license/packages.tsv`. There is no contributor licence agreement
+and no copyright assignment; contributors keep their copyright.

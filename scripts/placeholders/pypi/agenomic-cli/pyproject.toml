@@ -7,13 +7,13 @@ name = "agenomic-cli"
 version = "0.0.1"
 description = "Reserved namespace for the Agenomic project (https://github.com/treansai/agenomic). The real package will be published here in a future release."
 readme = "README.md"
-license = { text = "Apache-2.0" }
+license = { text = "AGPL-3.0-only" }
 requires-python = ">=3.10"
 authors = [{ name = "Agenomic" }]
 keywords = ["agenomic", "placeholder"]
 classifiers = [
     "Development Status :: 1 - Planning",
-    "License :: OSI Approved :: Apache Software License",
+    "License :: OSI Approved :: GNU Affero General Public License v3",
     "Programming Language :: Python :: 3",
 ]
 

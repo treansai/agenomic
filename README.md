@@ -31,3 +31,31 @@ Access to `agenomic-cloud` requires permissions on the private repository.
 ```sh
 git submodule update --remote --merge
 ```
+
+## License
+
+Copyright (C) 2026 Agenomic Contributors.
+The Agenomic Community edition is distributed under the GNU Affero General
+Public License v3.0 (`AGPL-3.0-only`). The full text is in
+[LICENSE](LICENSE); the operational rules are in
+[docs/legal/open-source-license.md](docs/legal/open-source-license.md).
+
+[![AGPL v3](https://img.shields.io/badge/license-AGPL--3.0--only-blue.svg)](LICENSE)
+
+Component licenses differ on purpose. The SDKs and the specification stay
+permissive so they can be embedded in any application:
+
+| Component | License |
+|---|---|
+| This repository, `crates/agenomic-fingerprint`, `crates/agenomic-metrics` | `AGPL-3.0-only` |
+| `agenomic-cli/` | `AGPL-3.0-only` |
+| `agenomic-codedrift/` | `AGPL-3.0-only` |
+| `agenomic-examples/` | `AGPL-3.0-only` |
+| `agenomic-python/` | `Apache-2.0` |
+| `agenomic-typescript/` | `MIT` |
+| `agenomic-spec/` | `Apache-2.0` |
+
+Agenomic Cloud and Enterprise components are proprietary, live in private
+repositories and are not covered by any of these licenses. Third-party
+dependencies keep their own licenses; each Core release ships a
+`THIRD_PARTY_LICENSES.md` report.
