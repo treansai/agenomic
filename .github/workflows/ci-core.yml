@@ -1,5 +1,6 @@
 # Core (public) gate: the shared crates build and test, the submodule pointers
-# are reachable, no secret and no proprietary marker is present in the tree.
+# are reachable, the licence metadata matches scripts/license/packages.tsv, no
+# secret and no proprietary marker is present in the tree.
 # Runs with the default GITHUB_TOKEN only; a fork's pull request gets no secret.
 name: ci-core
 
@@ -27,7 +28,11 @@ jobs:
       - name: actionlint
         run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.10@sha256:ef8299f97635c4c30e2298f48f30763ab782a4ad2c95b744649439a039421e36 -color
       - name: shellcheck
-        run: docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d -S warning scripts/ci/*.sh scripts/release/*.sh scripts/github/*.sh
+        run: docker run --rm -v "$PWD:/mnt" koalaman/shellcheck:v0.11.0@sha256:61862eba1fcf09a484ebcc6feea46f1782532571a34ed51fedf90dd25f925a8d -S warning scripts/ci/*.sh scripts/release/*.sh scripts/github/*.sh scripts/license/*.sh
+      - name: licence checks
+        run: ./scripts/license/check-all.sh
+      - name: licence checks are themselves tested
+        run: ./scripts/license/test-license-checks.sh
       - name: proprietary leak scan
         run: ./scripts/ci/proprietary-leak-check.sh
       - name: submodule pointers are reachable on their public repositories
