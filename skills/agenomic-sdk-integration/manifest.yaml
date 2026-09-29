@@ -1,0 +1,112 @@
+apiVersion: agenomic.skills/v1alpha1
+kind: Skill
+metadata:
+  name: agenomic-sdk-integration
+  version: 0.2.0
+  owner: agenomic-platform
+summary:
+  objective: >
+    Integrate Agenomic into an AI-agent codebase the integrator did not write.
+    Inspect the repository, map how the agent actually runs, pick the smallest
+    correct set of Agenomic surfaces for that architecture, wire them at real
+    behavioral boundaries, validate the resulting coverage, and report honestly
+    on what is instrumented and what still is not.
+  non_goals:
+    - >
+      Scaffolding bundle manifests from scratch. `agenomic init` / `enrich`
+      already detect runtime, framework, workflows, systems and env vars;
+      this skill drives those commands, it does not reimplement detection.
+    - >
+      Registering an agent as its own bundle. That is
+      `self-graft-and-evaluate`; this skill instruments pre-existing code.
+    - Executing workflows, signing attestations, or pushing to Agenomic Cloud.
+    - Authoring business policy (criticality, allowed intents, approval rules).
+inputs:
+  - id: workspace
+    description: Path to the repository to instrument.
+    type: path
+    required: true
+  - id: mode
+    description: >
+      How far to go. `analyze` is the default and makes no source changes:
+      it writes only reports under `.agenomic/`, so inspection precedes code
+      generation structurally rather than by exhortation.
+    type: enum
+    values: [analyze, minimal, integrate, full, replay, monitor, ci]
+    default: analyze
+  - id: language
+    description: >
+      Primary language. Auto-detected from `runtime.runtime_kind` in
+      `agenomic init --dry-run` (`node` maps to typescript, `go` to other).
+    type: enum
+    values: [python, typescript, rust, other, auto]
+    default: auto
+  - id: agent_id
+    description: >
+      Stable agent identifier. Prefer the `agent://<org>/<slug>` form
+      (see agenomic-cli/docs/agent-uri.md). Defaults to the detected value.
+    type: string
+    required: false
+  - id: environment
+    description: Deployment tier the integration targets.
+    type: enum
+    values: [local, staging, production]
+    default: local
+outputs:
+  - id: plan
+    description: Integration plan (JSON) written before any file is modified.
+    type: path
+  - id: coverage
+    description: Machine-readable capability coverage matrix.
+    type: path
+  - id: report
+    description: Final integration report (JSON + human summary).
+    type: path
+  - id: status
+    description: Overall verdict.
+    type: enum
+    values: [analyzed, integrated, partial, error]
+requirements:
+  cli:
+    - agenomic >= 0.3.0-alpha (release tag v0.3.0-apha.0)
+  sdk:
+    - python: "agenomic >= 0.1.3 (PyPI); optional, only for Python targets"
+    - typescript: "@treansai/agenomic-typescript >= 0.1.1 (npm); optional, only for TS/Node targets"
+  tools:
+    - jq
+  network: none
+  permissions:
+    - read+write inside `workspace`
+    - read-only on the Agenomic repo for recipes and templates
+phases:
+  - inspect    # drive `agm init --dry-run`; read entrypoints; map architecture
+  - detect     # framework, providers, boundaries, existing observability
+  - plan       # emit the integration plan; stop here in `analyze` mode
+  - integrate  # wire the SDK/CLI at the mapped boundaries
+  - validate   # `agm validate`, `agm trace validate` (converted), `agm doctor`, call counts
+  - test       # smoke run + failure-path tests
+  - report     # coverage matrix + honest gap list
+recipes:
+  python: recipes/python.md
+  typescript: recipes/typescript.md
+  rust: recipes/rust.md
+  langgraph: recipes/langgraph.md
+  crewai: recipes/crewai.md
+  temporal: recipes/temporal.md
+  mcp: recipes/mcp.md
+  providers: recipes/providers.md
+  observability: recipes/observability.md
+references:
+  capability_matrix: references/capability-matrix.md
+  architecture: references/architecture.md
+  troubleshooting: references/troubleshooting.md
+templates:
+  integration_report: templates/integration-report.md
+  env_example: templates/env.example
+  ci_github_actions: templates/ci-github-actions.yml
+  integration_doc: templates/agenomic-integration.md
+scripts:
+  inspect: scripts/inspect-target.sh
+  validate: scripts/validate-integration.sh
+  smoke: scripts/smoke-run.sh
+idempotent: true

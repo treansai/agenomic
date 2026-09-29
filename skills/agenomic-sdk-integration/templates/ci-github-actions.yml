@@ -1,0 +1,133 @@
+# Agenomic release gate: copy to .github/workflows/agenomic.yml and adapt.
+#
+# Introduce it in two stages:
+#   1. `continue-on-error: true` everywhere until the baseline is stable;
+#   2. remove it from the checks the team agrees should block.
+#
+# Do NOT enable blocking automatically. Gating someone's deploy pipeline is
+# their decision, not the integration's.
+
+name: agenomic
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Installs agenomic + agm into ~/.local/bin; pin with AGENOMIC_VERSION=<tag>.
+      - name: Install Agenomic CLI
+        run: |
+          curl -fsSL https://agenomic.io/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      # Schema + semantic validation of genome / workflows / system,
+      # plus a security scan. Exit 1 = ValidationFailed, exit 4 = SecurityViolation.
+      - name: Validate bundle
+        run: agenomic validate . --level ci
+
+      # Fails when genome.yaml no longer matches the repository. `--dry-run`
+      # writes nothing, never commits and always exits 0; plain `agm update`
+      # would commit, and exits 1 when nothing changed.
+      - name: Bundle is up to date
+        run: |
+          agm update --dry-run --format json > /tmp/agenomic-update.json
+          test "$(jq '.changed | length' /tmp/agenomic-update.json)" = "0" \
+            || { echo "::error::genome.yaml is stale: run 'agm update --no-commit' locally"; exit 1; }
+
+      # Replay fixtures must be in the CLI trace shape (convert Python traces
+      # before committing them; TypeScript traces cannot be used today).
+      - name: Validate trace fixtures
+        if: hashFiles('evals/*.cli.jsonl') != ''
+        run: |
+          for f in evals/*.cli.jsonl; do agenomic trace validate "$f"; done
+
+  release:
+    if: github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      # Installs agenomic + agm into ~/.local/bin; pin with AGENOMIC_VERSION=<tag>.
+      - name: Install Agenomic CLI
+        run: |
+          curl -fsSL https://agenomic.io/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: Build bundle
+        run: agenomic build . --output dist/agent.bundle.tar.zst --strict
+
+      # Deterministic, offline: the contract's checks over the recorded traces.
+      # One file, not a directory. Statistical replay across model variation is
+      # Agenomic Cloud (`agenomic cloud push-replay --mode statistical`).
+      - name: Replay
+        run: |
+          agenomic replay dist/agent.bundle.tar.zst evals/traces.cli.jsonl \
+            --contract behavior.contract.yaml \
+            --output dist/replay.json \
+            --fail-on high
+
+      # Exit 8 = DiffRiskExceeded: a capability, tool, policy or model change
+      # that warrants review. Compares genome.yaml and behavior.contract.yaml
+      # of two bundle directories; topology is not diffed.
+      - name: Diff against previous release
+        continue-on-error: true
+        run: |
+          git worktree add --detach /tmp/previous HEAD~1 2>/dev/null || exit 0
+          agenomic diff /tmp/previous . --fail-on critical
+
+      # Evaluates policies/*.rego of a bundle directory.
+      - name: Policy evaluation
+        run: agenomic policy eval .
+
+      # Locally-signed attestations are technical integrity evidence and carry
+      # a non-probative status notice.
+      - name: Attest
+        env:
+          AGENOMIC_SIGNING_KEY: ${{ secrets.AGENOMIC_SIGNING_KEY }}
+        run: |
+          printf '%s' "$AGENOMIC_SIGNING_KEY" > /tmp/signing.pem
+          chmod 600 /tmp/signing.pem
+          agenomic attest dist/agent.bundle.tar.zst \
+            --replay-report dist/replay.json \
+            --sign-with /tmp/signing.pem \
+            --output dist/attestation.json
+          rm -f /tmp/signing.pem
+
+      - name: Verify attestation
+        run: agenomic verify dist/attestation.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: agenomic-release
+          path: |
+            dist/replay.json
+            dist/attestation.json
+
+      # Uncomment once the team has decided to publish from CI.
+      # - name: Push to Agenomic Cloud
+      #   env:
+      #     AGENOMIC_API_KEY: ${{ secrets.AGENOMIC_API_KEY }}
+      #   run: |
+      #     agenomic cloud push-agent dist/agent.bundle.tar.zst --name "Claims Agent"
+
+# Gating exit codes (agenomic-cli/docs/ci-cd.md)
+#
+#   1  ValidationFailed                 block PR
+#   4  SecurityViolation                block PR and alert
+#   7  ContractFailed                   block release, comment on PR
+#   8  DiffRiskExceeded                 require review approval
+#   9  AttestationVerificationFailed    block deploy
+#  16  PolicyBlocked / governance block
+#  18  RequireHumanApproval             hold for approval
+#  19  LedgerIntegrityFailed            block and investigate
+#
+# `--format json` gives a machine-readable report on most commands; `trace
+# validate` / `trace summarize` print plain text, and `doctor` is always JSON.

@@ -31,6 +31,7 @@ Every skill MUST:
 | Skill | Purpose |
 |---|---|
 | [`self-graft-and-evaluate`](./self-graft-and-evaluate/) | Let an agent register itself as an Agenomic bundle and run its own replay/contract checks. Spec-version aware: single agents (genome), staged workflows, and multi-agent systems (spec v0.2, RFC 0009). |
+| [`agenomic-sdk-integration`](./agenomic-sdk-integration/) | Integrate Agenomic into an existing agent codebase the integrator did not write. Inspects the repo, maps the real run/model/tool/memory boundaries, wires the SDK or CLI at those boundaries, measures coverage, and reports the gaps. Modes: `analyze` (default), `minimal`, `integrate`, `full`, `replay`, `monitor`, `ci`. |
 
 ## Adding a new skill
 
