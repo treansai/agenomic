@@ -13,6 +13,9 @@ Verified on 2026-09-29 against:
 | CLI `agm` / `agenomic` | `agenomic-cli` main (decdbce); latest public release `v0.3.0-apha.0` |
 | Spec | `agenomic-spec` main (483f2e2) |
 
+Section 11 (managed prompts) has its own verification line: it describes an
+unreleased branch of the Python SDK, not the versions above.
+
 Re-verify this file whenever the SDKs or CLI change; a stale matrix is worse
 than none, because it launders assumptions as facts.
 
@@ -48,6 +51,8 @@ Legend: `✅` shipped · `⚠` partial / manual / cloud only · `❌` not availa
 | Genome / lockfile / hashing | ⚠ `client.agent.load(path).configure_model(...)` | ⚠ `client.models.configure` (rewrites the file) | ✅ `init`, `update`, `hash`, `validate`, `diff` |
 | Bundles / attestation | ⚠ `ReleaseAttestation`, `AgenomicClient.upload_bundle` / `create_release` | ❌ | ✅ `build`, `attest`, `verify`, `compile` |
 | Cloud | ✅ `Client` (local-first), `AgenomicClient` (async uploads) | ✅ `AgenomicClient` | ✅ `cloud *`, `bucket use` |
+| Managed prompts (versions, render, bindings, LangGraph pinning) | ⚠ unreleased branch only, §11 | ❌ | ❌ |
+| Prompt discovery / import | ⚠ unreleased branch only: `agenomic-py prompts scan`, `import`, §11 | ❌ | ❌ |
 
 ### Consequences for planning
 
@@ -82,6 +87,11 @@ ledger entries, replay reports and evidence. Any plan promising "SDK writes
 to the ledger" is wrong. The SDKs do talk to Agenomic Cloud directly
 (tracking, RMP, Protect, tools, benchmarks), and that channel fails loudly:
 see §8.
+
+**Managed prompts are Python only and unreleased.** A plan that pins
+prompts with `bind_langgraph` depends on a branch of the Python SDK, not on
+v0.1.3, and no SDK or CLI call approves, promotes or rolls back a release:
+see §11.
 
 ---
 
@@ -153,7 +163,7 @@ common case, and conflating the two produces plans that cannot be built.
 | Framework | Manifest / topology detection | Runtime instrumentation |
 |---|:--:|:--:|
 | Plain / custom | ✅ `agm init` | ⚠ manual at the four boundaries |
-| LangGraph | ✅ recovers `add_node`, `add_edge`, `add_conditional_edges`, `set_entry_point`, `START` / `END` | ✅ `TrackingCallbackHandler` (Python, tracking stream); ❌ `instrument_langgraph` is a no-op |
+| LangGraph | ✅ recovers `add_node`, `add_edge`, `add_conditional_edges`, `set_entry_point`, `START` / `END` | ✅ `TrackingCallbackHandler` (Python, tracking stream); ❌ `instrument_langgraph` is a no-op; ⚠ `bind_langgraph` pins managed prompts per thread (Python, unreleased, §11) |
 | LangChain | ⚠ framework detected from dependencies | ✅ `TrackingCallbackHandler` (Python, tracking stream) |
 | Temporal (Python) | ✅ recovers `@workflow.defn`, `@workflow.signal` | ⚠ manual at activity/workflow boundaries |
 | CrewAI | ⚠ dependency-level; `compile --target crewai` | ⚠ manual at crew/task/tool boundaries |
@@ -271,6 +281,7 @@ around them and cite them in the report when they apply:
 | Python exporters (`Jsonl`, `AtepLocal`, `Http`, `Multi`) | log and swallow |
 | Python `Client` in cloud mode (tracking, monitor, RMP, tools, protect) | synchronous request, raises `CloudError` |
 | Python `TrackingCallbackHandler` | background worker, counts drops, never raises |
+| Python managed prompts (`client.prompts`, `bind_langgraph`; unreleased, §11) | retries, then raises `registry_unavailable`; an existing thread continues on its cached binding |
 | TypeScript `traceAgentRun` / `withTracedRoute` with `endpoint` | rejects the agent call |
 | TypeScript tracking / RMP in cloud mode | throws |
 | TypeScript tools / protect / benchmarks without a URL | throws `cloud_required` |
@@ -315,6 +326,12 @@ templates: `AGENOMIC_WORKSPACE_ID`, `AGENOMIC_ENVIRONMENT`,
 `AGENOMIC_TRACKING_ENABLED`, `AGENOMIC_LEDGER_MODE`, `AGENOMIC_EDITION` (a
 cloud server setting, not a CLI or SDK one).
 
+One exception, on the unreleased managed prompts branch of the Python SDK
+only (§11): `Client.from_env()` reads `AGENOMIC_ENDPOINT`,
+`AGENOMIC_API_KEY`, `AGENOMIC_WORKSPACE_ID`, `AGENOMIC_PROMPT_CACHE_DIR` and
+`AGENOMIC_TIMEOUT`, and `agenomic-py prompts import` uses it. Python v0.1.3
+has no `from_env()`, and the CLI reads none of the last three.
+
 Other variables in play:
 
 - `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`: read by `agm enrich` for direct
@@ -334,3 +351,62 @@ tracing. Python `AgenomicClient(endpoint, api_key)` (the async upload client)
 has no local mode. If the target project wants env-driven SDK config, it
 supplies its own variables: name them after the project, and add them to the
 project's `.env.example` with empty values.
+
+## 11. Managed prompts
+
+Verified on 2026-10-05 against the `agenomic-python` branch
+`feat/managed-prompts` (c3616ef). **Unreleased**: none of this is in
+`agenomic` v0.1.3, and the TypeScript SDK and the CLI have no managed prompt
+surface. Workflow: `recipes/langgraph.md` §8.
+
+In the table, *local* means `Client()` without `base_url` (an in-process
+registry) or an offline bundle, and *cloud* means a registry that serves the
+managed prompt API.
+
+| Python surface (unreleased) | Status |
+| --- | --- |
+| `client.prompts` (get, render, publish, drafts, aliases) | ✅ local, ⚠ cloud |
+| `client.bindings`, `client.channels` (read only) | ✅ local, ⚠ cloud |
+| `PromptBundle.load`, `agenomic-py prompts bundle-verify` | ✅ offline |
+| `bind_langgraph`, `prompts_for`, `scope_config` | ✅ local, ⚠ cloud |
+| `managed_prompt`, `AgentFactory` | ✅ local |
+| `agenomic-py prompts scan`, `render`, `digest` | ✅ offline |
+| `agenomic-py prompts import` | ⚠ cloud only, not run end to end |
+| Tracking `model.call.started` with `prompt_refs` | ✅ with `config_for` |
+| Import or registration calls in `client.prompts` | ❌ CLI import only |
+| Usage reporting (`bindings.report_usage`) | ❌ |
+| Slot, candidate, approve, promote or rollback calls | ❌ |
+| Rewriting code to read managed prompts | ❌ by hand |
+| Experiments and experiment runners | ❌ |
+
+Evidence. The local rows: examples 12 to 16 of `agenomic-python/examples`
+(exit 0), the scan of a sample project, and every snippet of
+`recipes/langgraph.md` §8 run in local and offline mode on the points below.
+The cloud rows are covered only by the SDK's own tests against a fake
+registry; no live registry was used, and `prompts import` was never run
+against one.
+
+`bind_langgraph` claims these points only. The install range is
+`langgraph>=1.0.10,<2`; another version runs with one
+`AgenomicUntestedVersionWarning`.
+
+| langgraph | langchain-core | Python, macOS arm64 |
+| --- | --- | --- |
+| 1.2.11 | 1.6.3 | 3.10, 3.11 |
+| 1.0.10 (`langgraph-prebuilt` 1.0.8) | 1.6.3 | 3.10, 3.13 |
+
+These points were run locally only: no CI cell has run, and Linux, Windows
+and the other Python versions are unverified.
+
+Consequences for planning:
+
+- Production agents run with a `read` key. `bind_langgraph` refuses a key
+  with all scopes, `write` or `admin` (`privileged_credential`) unless the
+  project opts in.
+- An API key binds, resolves or exports only a release that is approved, in
+  production or the target of a channel; any other gets `session_required`
+  (`error.reason == "ungoverned_release"`).
+- Approving, promoting and rolling back a release, and moving an alias, need
+  a signed-in person in Agenomic Cloud. Every API key gets `session_required`,
+  so never plan an SDK, CLI or CI step that promotes prompts.
+- Threads keep their first release: a promotion reaches new threads only.
