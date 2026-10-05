@@ -191,7 +191,9 @@ agenomic-py prompts scan app/ --out prompt-report.json
   - `blocked_secret`: it matched a secret pattern, and the report carries the
     location only, never the text.
 - Each candidate proposes a slot path `<node>.<usage>` (`plan.instructions`
-  for a constant used by the `plan` node) and a prompt id `prm_<slot>`.
+  for a constant used by the `plan` node; the symbol name replaces the node
+  when no node uses it) and a prompt id made from the slot path with its
+  dots as underscores (`prm_plan_instructions`).
 
 **The report is not a coverage proof.** A string built inline in a node under
 another name (`system = f"Reply in {locale}"`) is not reported at all, and a
@@ -211,16 +213,19 @@ agenomic-py prompts import prompt-report.json --agent-id <agent uuid> \
   plan (JSON on stdout, `plan <plan_id> <plan_digest>` on stderr) and changes
   nothing. Review every item's `action` (`create_prompt`, `create_version`,
   `reuse_version`, `map_slot_only`, `skip`, `blocked`); `summary.unresolved`
-  counts what could not be ported.
+  counts what could not be ported. The upload already needs a `write` or
+  `admin` key.
 - `--apply` uploads the same report again (the registry returns the same
-  plan) and applies exactly that plan, citing its `plan_digest`. It needs a
-  `write` or `admin` key. `--mode draft` writes drafts instead of versions.
+  plan) and applies exactly that plan, citing its `plan_digest`.
+  `--mode draft` writes drafts instead of versions.
 - `--declare-slots --slots-revision N` also records the slot paths in the
   agent's slot inventory. `N` is the current inventory revision, `0` for an
   agent that has none; a stale value is refused with
   `agent_prompt_slots_conflict`.
-- Exit codes: 0, 1 (refused; the error code is printed) and 2 (usage, missing
-  `AGENOMIC_ENDPOINT` or `AGENOMIC_API_KEY`, unreadable file).
+- Exit codes: 0, 1 (refused or unreachable; the error code is printed) and 2
+  (usage, no `AGENOMIC_ENDPOINT`, unreadable file). A missing
+  `AGENOMIC_API_KEY` is not caught locally: the request goes out without a
+  key and the command exits 1.
 - The CLI is the only import path: `client.prompts` has no import,
   declaration file or runtime registration call yet. This path was not run
   against a live registry (capability matrix §11).
@@ -315,8 +320,14 @@ result = managed.invoke(state, {"configurable": {"thread_id": "ticket-1001"}})
 - Each invocation makes one small idempotent binding request, and none per
   node or token.
 - During a registry outage an existing thread continues on its cached,
-  verified binding, and a new thread raises `registry_unavailable`. Nothing
-  falls back to a bundle, a cached latest version or an inline string.
+  verified binding, and a new thread raises `registry_unavailable`. The
+  default cache is in memory, so after a restart an existing thread
+  continues only with a disk cache (`AGENOMIC_PROMPT_CACHE_DIR` or
+  `PromptCache(directory)`). An online `bind_langgraph` reads
+  `GET /v1/whoami`, so it raises `registry_unavailable` in a process that
+  starts during the outage; an offline bundle (8.8) needs no registry.
+  Nothing falls back to a bundle, a cached latest version or an inline
+  string.
 - Checkpoint metadata carries `agenomic_binding_id`,
   `agenomic_prompt_manifest_digest` and `agenomic_release_id`, never prompt
   text or credentials.
@@ -439,7 +450,9 @@ the release has one. Refs and hashes only, never prompt text; the
   `AgenomicUntestedVersionWarning`.
 - `interrupt()` inside async nodes needs Python 3.11. On Python 3.10 async,
   `nested_bind_unsupported` cannot be detected.
-- `astream_events(version="v3")` passes through as experimental.
+- `astream_events(version="v3")` passes through as experimental on 1.2.11.
+  On 1.0.10 LangGraph raises `NotImplementedError`, and the proxy passes it
+  on.
 - Wrap a stream consumed partially in `contextlib.closing` (`aclosing` for
   async) so the proxy releases it at once.
 

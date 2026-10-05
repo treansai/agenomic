@@ -281,7 +281,7 @@ around them and cite them in the report when they apply:
 | Python exporters (`Jsonl`, `AtepLocal`, `Http`, `Multi`) | log and swallow |
 | Python `Client` in cloud mode (tracking, monitor, RMP, tools, protect) | synchronous request, raises `CloudError` |
 | Python `TrackingCallbackHandler` | background worker, counts drops, never raises |
-| Python managed prompts (`client.prompts`, `bind_langgraph`; unreleased, §11) | retries, then raises `registry_unavailable`; an existing thread continues on its cached binding |
+| Python managed prompts (`client.prompts`, `bind_langgraph`; unreleased, §11) | reads and binding calls retry, then raise `registry_unavailable`; an existing thread continues on its cached binding (in memory, or on disk across restarts with `AGENOMIC_PROMPT_CACHE_DIR`); online `bind_langgraph` raises it when the registry is down at bind time |
 | TypeScript `traceAgentRun` / `withTracedRoute` with `endpoint` | rejects the agent call |
 | TypeScript tracking / RMP in cloud mode | throws |
 | TypeScript tools / protect / benchmarks without a URL | throws `cloud_required` |
@@ -366,7 +366,7 @@ managed prompt API.
 | Python surface (unreleased) | Status |
 | --- | --- |
 | `client.prompts` (get, render, publish, drafts, aliases) | ✅ local, ⚠ cloud |
-| `client.bindings`, `client.channels` (read only) | ✅ local, ⚠ cloud |
+| `client.channels` (read only), `client.bindings` | ✅ local, ⚠ cloud |
 | `PromptBundle.load`, `agenomic-py prompts bundle-verify` | ✅ offline |
 | `bind_langgraph`, `prompts_for`, `scope_config` | ✅ local, ⚠ cloud |
 | `managed_prompt`, `AgentFactory` | ✅ local |
@@ -386,7 +386,7 @@ The cloud rows are covered only by the SDK's own tests against a fake
 registry; no live registry was used, and `prompts import` was never run
 against one.
 
-`bind_langgraph` claims these points only. The install range is
+`bind_langgraph` was tested on these points only. The install range is
 `langgraph>=1.0.10,<2`; another version runs with one
 `AgenomicUntestedVersionWarning`.
 
@@ -404,8 +404,10 @@ Consequences for planning:
   with all scopes, `write` or `admin` (`privileged_credential`) unless the
   project opts in.
 - An API key binds, resolves or exports only a release that is approved, in
-  production or the target of a channel; any other gets `session_required`
-  (`error.reason == "ungoverned_release"`).
+  production or the current target of one of the agent's channels. Another
+  release gets `session_required` (`error.reason == "ungoverned_release"`),
+  and a rejected or rolled back release gets `release_not_bindable`, whoever
+  asks.
 - Approving, promoting and rolling back a release, and moving an alias, need
   a signed-in person in Agenomic Cloud. Every API key gets `session_required`,
   so never plan an SDK, CLI or CI step that promotes prompts.
