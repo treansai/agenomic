@@ -173,8 +173,14 @@ The path from prompts in code to pinned prompts:
 ### 8.1 Scan
 
 ```sh
-agenomic-py prompts scan app/ --out prompt-report.json
+REPORT="$(mktemp -d)/prompt-report.json"      # outside the repository
+agenomic-py prompts scan app/ --out "$REPORT"
 ```
+
+**The report holds prompt text.** Every `supported` candidate carries its
+content, which the import turns into prompt versions. Write it outside the
+worktree, as above. If it must live in the repository, add its path to
+`.gitignore` first, and delete it once the import is applied. Never commit it.
 
 - The scanner parses the files with `ast`. It never imports, runs or rewrites
   the scanned code. It writes an `agenomic.prompt_discovery_report/v1`
@@ -206,8 +212,8 @@ yourself and list in the report what stays in code.
 
 ```sh
 export AGENOMIC_ENDPOINT=https://<registry> AGENOMIC_API_KEY=<write key>
-agenomic-py prompts import prompt-report.json --agent-id <agent uuid>
-agenomic-py prompts import prompt-report.json --agent-id <agent uuid> \
+agenomic-py prompts import "$REPORT" --agent-id <agent uuid>
+agenomic-py prompts import "$REPORT" --agent-id <agent uuid> \
   --apply --declare-slots --slots-revision 0
 ```
 
@@ -420,7 +426,9 @@ managed = bind_langgraph(
 ```
 
 - The bundle is a signed export of one release
-  (`client.prompts.export_bundle`). Loading it checks the signature against
+  (`client.prompts.export_bundle`). It carries prompt text: keep it out of
+  source control like the scan report (ship it as a deploy artifact or add
+  its path to `.gitignore`). Loading it checks the signature against
   `trust`, every digest, the workspace and agent, the expiry and the approval.
   `agenomic-py prompts bundle-verify` runs the same checks from a shell.
 - A graph with a checkpointer needs `LocalBindingStore(directory)`, so pins
