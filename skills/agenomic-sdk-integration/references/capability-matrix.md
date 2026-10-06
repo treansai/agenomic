@@ -339,7 +339,10 @@ Exceptions, on the unreleased managed prompts branches only (§11):
 - Python `Client.from_env()` reads `AGENOMIC_ENDPOINT`, `AGENOMIC_API_KEY`,
   `AGENOMIC_WORKSPACE_ID`, `AGENOMIC_PROMPT_CACHE_DIR` and
   `AGENOMIC_TIMEOUT`, and `agenomic-py prompts import` uses it. Python
-  v0.1.3 has no `from_env()`, and the CLI reads none of the last three.
+  v0.1.3 has no `from_env()`, and the CLI reads none of the last three. A
+  project on this branch that binds managed prompts does set
+  `AGENOMIC_WORKSPACE_ID`: a `bind_langgraph` made during a registry outage
+  needs it (§8).
 - The Python experiment runner (`agenomic-py experiment serve`) reads
   `AGENOMIC_RUNNER_TOKEN` and `AGENOMIC_ENDPOINT`.
 - `agm channels promote` and `rollback` read `AGENOMIC_WEB_URL`, the web
