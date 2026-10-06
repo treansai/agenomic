@@ -287,9 +287,9 @@ around them and cite them in the report when they apply:
 | Python `Client` in cloud mode (tracking, monitor, RMP, tools, protect) | synchronous request, raises `CloudError` |
 | Python `TrackingCallbackHandler` | background worker, counts drops, never raises |
 | Python managed prompts (`client.prompts`, `bind_langgraph`; unreleased, §11) | reads and binding calls retry, then raise `registry_unavailable`; an existing thread continues on its cached binding (in memory, or on disk across restarts with `AGENOMIC_PROMPT_CACHE_DIR`); an online `bind_langgraph` made during the outage raises it unless the client knows its workspace (`AGENOMIC_WORKSPACE_ID`), and then serves cached bindings only |
-| Python `ExperimentRunner` (unreleased, §11) | the first hello retries, then raises `registry_unavailable`; after it, a failed claim or an outage is logged and the runner keeps serving |
-| TypeScript `client.prompts`, `client.bindings` (unreleased, §11) | throw `ApiError` (`transport_error`) at once: no retry, no cached binding |
-| `agm prompts`, `agm channels` (unreleased, §11) | exit 6 |
+| Python `ExperimentRunner` (unreleased, §11) | the first hello retries, then raises `registry_unavailable`; after it, an outage or a failed claim is logged and the runner keeps serving, and only a refused runner token or hello stops it |
+| TypeScript `client.prompts`, `client.bindings` (unreleased, §11) | throw `ApiError` (`transport_error`) at once: no retry and no binding cache; only an exact version that client already read comes from memory |
+| `agm prompts`, `agm channels` cloud commands (unreleased, §11) | exit 6 |
 | TypeScript `traceAgentRun` / `withTracedRoute` with `endpoint` | rejects the agent call |
 | TypeScript tracking / RMP in cloud mode | throws |
 | TypeScript tools / protect / benchmarks without a URL | throws `cloud_required` |
@@ -372,7 +372,7 @@ project's `.env.example` with empty values.
 
 Verified on 2026-10-06 against the `feat/managed-prompts` branches of
 `agenomic-python` (07c58c6), `agenomic-typescript` (e50d632) and
-`agenomic-cli` (3d351e3). **Unreleased**: none of this is in `agenomic`
+`agenomic-cli` (fd54965). **Unreleased**: none of this is in `agenomic`
 v0.1.3, `@treansai/agenomic-typescript` 0.1.1 or `agm` `v0.3.0-apha.0`.
 Workflow: `recipes/langgraph.md` §8.
 
