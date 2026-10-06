@@ -13,8 +13,8 @@ Verified on 2026-09-29 against:
 | CLI `agm` / `agenomic` | `agenomic-cli` main (decdbce); latest public release `v0.3.0-apha.0` |
 | Spec | `agenomic-spec` main (483f2e2) |
 
-Section 11 (managed prompts) has its own verification line: it describes an
-unreleased branch of the Python SDK, not the versions above.
+Section 11 (managed prompts) has its own verification line: it describes
+unreleased branches of both SDKs and the CLI, not the versions above.
 
 Re-verify this file whenever the SDKs or CLI change; a stale matrix is worse
 than none, because it launders assumptions as facts.
@@ -51,8 +51,10 @@ Legend: `✅` shipped · `⚠` partial / manual / cloud only · `❌` not availa
 | Genome / lockfile / hashing | ⚠ `client.agent.load(path).configure_model(...)` | ⚠ `client.models.configure` (rewrites the file) | ✅ `init`, `update`, `hash`, `validate`, `diff` |
 | Bundles / attestation | ⚠ `ReleaseAttestation`, `AgenomicClient.upload_bundle` / `create_release` | ❌ | ✅ `build`, `attest`, `verify`, `compile` |
 | Cloud | ✅ `Client` (local-first), `AgenomicClient` (async uploads) | ✅ `AgenomicClient` | ✅ `cloud *`, `bucket use` |
-| Managed prompts (versions, render, bindings, LangGraph pinning) | ⚠ unreleased branch only, §11 | ❌ | ❌ |
+| Managed prompts (versions, render, bindings, offline bundles) | ⚠ unreleased branch only, §11 | ⚠ unreleased branch only: read, render, bind, §11 | ⚠ unreleased branch only: `prompts`, `channels`, §11 |
+| LangGraph prompt pinning | ⚠ unreleased branch only: `bind_langgraph`, §11 | ❌ | ❌ |
 | Prompt discovery / import | ⚠ unreleased branch only: `agenomic-py prompts scan`, `import`, §11 | ❌ | ❌ |
+| Prompt experiments | ⚠ unreleased branch only, cloud only: `client.experiments`, runner, §11 | ❌ | ❌ |
 
 ### Consequences for planning
 
@@ -88,10 +90,13 @@ to the ledger" is wrong. The SDKs do talk to Agenomic Cloud directly
 (tracking, RMP, Protect, tools, benchmarks), and that channel fails loudly:
 see §8.
 
-**Managed prompts are Python only and unreleased.** A plan that pins
-prompts with `bind_langgraph` depends on a branch of the Python SDK, not on
-v0.1.3, and no SDK or CLI call approves, promotes or rolls back a release:
-see §11.
+**Managed prompts are unreleased, and only Python has the full surface.**
+Every managed prompt call lives on a branch of an SDK or of the CLI, not in
+the versions above. Python has imports, `bind_langgraph` and experiments on
+top of the registry calls; TypeScript reads, renders and binds; `agm` reads,
+publishes, renders and exports. No SDK or CLI call approves, promotes or
+rolls back a release, and `agm channels promote` exits 0 without moving
+anything: see §11.
 
 ---
 
@@ -281,7 +286,10 @@ around them and cite them in the report when they apply:
 | Python exporters (`Jsonl`, `AtepLocal`, `Http`, `Multi`) | log and swallow |
 | Python `Client` in cloud mode (tracking, monitor, RMP, tools, protect) | synchronous request, raises `CloudError` |
 | Python `TrackingCallbackHandler` | background worker, counts drops, never raises |
-| Python managed prompts (`client.prompts`, `bind_langgraph`; unreleased, §11) | reads and binding calls retry, then raise `registry_unavailable`; an existing thread continues on its cached binding (in memory, or on disk across restarts with `AGENOMIC_PROMPT_CACHE_DIR`); online `bind_langgraph` raises it when the registry is down at bind time |
+| Python managed prompts (`client.prompts`, `bind_langgraph`; unreleased, §11) | reads and binding calls retry, then raise `registry_unavailable`; an existing thread continues on its cached binding (in memory, or on disk across restarts with `AGENOMIC_PROMPT_CACHE_DIR`); an online `bind_langgraph` made during the outage raises it unless the client knows its workspace (`AGENOMIC_WORKSPACE_ID`), and then serves cached bindings only |
+| Python `ExperimentRunner` (unreleased, §11) | the first hello retries, then raises `registry_unavailable`; after it, a failed claim or an outage is logged and the runner keeps serving |
+| TypeScript `client.prompts`, `client.bindings` (unreleased, §11) | throw `ApiError` (`transport_error`) at once: no retry, no cached binding |
+| `agm prompts`, `agm channels` (unreleased, §11) | exit 6 |
 | TypeScript `traceAgentRun` / `withTracedRoute` with `endpoint` | rejects the agent call |
 | TypeScript tracking / RMP in cloud mode | throws |
 | TypeScript tools / protect / benchmarks without a URL | throws `cloud_required` |
@@ -326,11 +334,16 @@ templates: `AGENOMIC_WORKSPACE_ID`, `AGENOMIC_ENVIRONMENT`,
 `AGENOMIC_TRACKING_ENABLED`, `AGENOMIC_LEDGER_MODE`, `AGENOMIC_EDITION` (a
 cloud server setting, not a CLI or SDK one).
 
-One exception, on the unreleased managed prompts branch of the Python SDK
-only (§11): `Client.from_env()` reads `AGENOMIC_ENDPOINT`,
-`AGENOMIC_API_KEY`, `AGENOMIC_WORKSPACE_ID`, `AGENOMIC_PROMPT_CACHE_DIR` and
-`AGENOMIC_TIMEOUT`, and `agenomic-py prompts import` uses it. Python v0.1.3
-has no `from_env()`, and the CLI reads none of the last three.
+Exceptions, on the unreleased managed prompts branches only (§11):
+
+- Python `Client.from_env()` reads `AGENOMIC_ENDPOINT`, `AGENOMIC_API_KEY`,
+  `AGENOMIC_WORKSPACE_ID`, `AGENOMIC_PROMPT_CACHE_DIR` and
+  `AGENOMIC_TIMEOUT`, and `agenomic-py prompts import` uses it. Python
+  v0.1.3 has no `from_env()`, and the CLI reads none of the last three.
+- The Python experiment runner (`agenomic-py experiment serve`) reads
+  `AGENOMIC_RUNNER_TOKEN` and `AGENOMIC_ENDPOINT`.
+- `agm channels promote` and `rollback` read `AGENOMIC_WEB_URL`, the web
+  app origin, to print an absolute move address.
 
 Other variables in play:
 
@@ -354,37 +367,89 @@ project's `.env.example` with empty values.
 
 ## 11. Managed prompts
 
-Verified on 2026-10-05 against the `agenomic-python` branch
-`feat/managed-prompts` (c3616ef). **Unreleased**: none of this is in
-`agenomic` v0.1.3, and the TypeScript SDK and the CLI have no managed prompt
-surface. Workflow: `recipes/langgraph.md` §8.
+Verified on 2026-10-06 against the `feat/managed-prompts` branches of
+`agenomic-python` (07c58c6), `agenomic-typescript` (e50d632) and
+`agenomic-cli` (3d351e3). **Unreleased**: none of this is in `agenomic`
+v0.1.3, `@treansai/agenomic-typescript` 0.1.1 or `agm` `v0.3.0-apha.0`.
+Workflow: `recipes/langgraph.md` §8.
 
-In the table, *local* means `Client()` without `base_url` (an in-process
-registry) or an offline bundle, and *cloud* means a registry that serves the
-managed prompt API.
+Python has the full surface. TypeScript reads, renders and binds, and `agm`
+reads, publishes, renders and exports. The scanner, the importer, the
+LangGraph adapter and the experiment runner are Python only.
+
+In the tables, *local* means Python `Client()` without `base_url` (an
+in-process registry), *offline* means no registry at all (a file or a
+bundle), and *cloud* means a registry that serves the managed prompt API.
 
 | Python surface (unreleased) | Status |
 | --- | --- |
-| `client.prompts` (get, render, publish, drafts, aliases) | ✅ local, ⚠ cloud |
-| `client.channels` (read only), `client.bindings` | ✅ local, ⚠ cloud |
+| `client.prompts`: get, render, publish, drafts, aliases | ✅ local, ⚠ cloud |
+| `client.prompts.resolve_agent`, `client.bindings` | ✅ local, ⚠ cloud |
+| `bindings.counterfactual`, `bindings.report_usage` | ⚠ cloud only |
+| `client.channels.get`, `history` (read only) | ✅ local, ⚠ cloud |
+| `client.channels.list`, `move_preview` | ⚠ cloud only |
+| `client.prompts.export_bundle` | ⚠ cloud only |
 | `PromptBundle.load`, `agenomic-py prompts bundle-verify` | ✅ offline |
 | `bind_langgraph`, `prompts_for`, `scope_config` | ✅ local, ⚠ cloud |
 | `managed_prompt`, `AgentFactory` | ✅ local |
 | `agenomic-py prompts scan`, `render`, `digest` | ✅ offline |
-| `agenomic-py prompts import` | ⚠ cloud only, not run end to end |
+| `to_langchain`, `from_langchain` (`langchain` extra) | ✅ offline |
+| `agenomic-py prompts import`, `import_report`, `apply_import` | ⚠ cloud only |
+| `plan_declarations`, `apply_declarations` (prompts files) | ⚠ cloud only |
+| `register_runtime` (live LangChain templates) | ⚠ cloud only |
 | Tracking `model.call.started` with `prompt_refs` | ✅ with `config_for` |
-| Import or registration calls in `client.prompts` | ❌ CLI import only |
-| Usage reporting (`bindings.report_usage`) | ❌ |
-| Slot, candidate, approve, promote or rollback calls | ❌ |
+| `client.experiments`: create, preflight, launch, reads | ⚠ cloud only |
+| `ExperimentRunner`, `agenomic-py experiment serve` | ⚠ cloud only |
+| `local_assignment`, `ExperimentRunner.run_trial` | ✅ local |
+| `agenomic-py experiment snapshot`, `snapshot_case` | ✅ offline |
+| `client.rmp.start(candidate_release_id=...)` | ✅ local, ⚠ cloud |
+| Slot or candidate calls; approve, promote, rollback | ❌ |
+| Datasets, runner registration, evidence reads | ❌ web app or API |
 | Rewriting code to read managed prompts | ❌ by hand |
-| Experiments and experiment runners | ❌ |
 
-Evidence. The local rows: examples 12 to 16 of `agenomic-python/examples`
-(exit 0), the scan of a sample project, and every snippet of
-`recipes/langgraph.md` §8 run in local and offline mode on the points below.
-The cloud rows are covered only by the SDK's own tests against a fake
-registry; no live registry was used, and `prompts import` was never run
-against one.
+| TypeScript surface (unreleased) | Status |
+| --- | --- |
+| `parseExecutionRef`, `parsePromptRef`, `formatPromptRef` | ✅ offline |
+| `renderText`, `renderMessages`, `compose`, `renderContent` | ✅ offline |
+| `contentDigest`, `manifestDigest`, `scanSecrets` | ✅ offline |
+| `threadKey`, `executionKey` (the Python keys) | ✅ offline |
+| `readPromptBundleFile` with `expectedBundleDigest` | ✅ offline |
+| `client.prompts`: get, resolve, resolveAgent | ⚠ cloud only |
+| `client.bindings`: create, get | ⚠ cloud only |
+| Bundle signature verification | ❌ digest pin only |
+| Publish, drafts, aliases, channels, export | ❌ |
+| Scan, import, usage reporting, LangGraph, experiments | ❌ |
+
+| CLI surface (unreleased) | Status |
+| --- | --- |
+| `agm prompts render <file>`, `render --bundle` | ✅ offline |
+| `agm prompts push --dry-run` | ✅ offline |
+| `agm prompts list`, `get`, `pull`, `push` | ⚠ cloud |
+| `agm prompts render --server`, `export` | ⚠ cloud |
+| `agm channels list`, `history` | ⚠ cloud |
+| `agm channels promote`, `rollback` | ⚠ hand-off only |
+| Drafts, alias moves, scan, import, experiments | ❌ |
+| YAML prompt files | ❌ JSON only |
+
+Evidence, all on macOS arm64:
+
+- Offline and local rows, run on 2026-10-06: every Python snippet of
+  `recipes/langgraph.md` §8, one offline trial per arm through
+  `local_assignment`, and examples 12 to 17 of `agenomic-python`.
+- One signed bundle, exported by the Python local registry, was checked by
+  `agenomic-py prompts bundle-verify`. TypeScript loaded it with its digest
+  pin, and `agm prompts render --bundle` rendered it, pinned or with
+  `--trust-key`. All three gave the same messages, and an unpinned load
+  was refused with `bundle_untrusted_key`.
+- TypeScript `threadKey` and `executionKey` gave the Python keys.
+- Cloud rows rest on each package's tests against a fake registry, with
+  three exceptions run against a local build of Agenomic Cloud on
+  2026-10-06: `client.experiments` with `agenomic-py experiment serve`, an
+  `ExperimentRunner` serving a 300-trial experiment, and the
+  `agm channels promote` hand-off.
+- Never run against a live registry: the Python import calls and
+  `agenomic-py prompts import`, the TypeScript resources, and the other
+  `agm` cloud commands.
 
 `bind_langgraph` was tested on these points only. The install range is
 `langgraph>=1.0.10,<2`; another version runs with one
@@ -410,5 +475,17 @@ Consequences for planning:
   asks.
 - Approving, promoting and rolling back a release, and moving an alias, need
   a signed-in person in Agenomic Cloud. Every API key gets `session_required`,
-  so never plan an SDK, CLI or CI step that promotes prompts.
+  through the remote MCP tools too, so never plan an SDK, CLI or CI step that
+  promotes prompts.
+- `agm channels promote` and `rollback` read a move preview, print where a
+  signed-in person completes the move, and exit 0. Exit 0 means the preview
+  was read, never that a channel moved.
 - Threads keep their first release: a promotion reaches new threads only.
+- TypeScript loads an offline bundle only with `expectedBundleDigest`.
+  Verify the signed export once (`agm prompts export --trust-key` or
+  `agenomic-py prompts bundle-verify`), then ship its
+  `prompt_bundle_digest` with the file.
+- Experiments need Agenomic Cloud with the `prompts.experiments` capability
+  and a runner that a workspace owner registered. Trials run on the
+  project's machines with its own model credentials, and the runner serves
+  Python LangGraph agents only.

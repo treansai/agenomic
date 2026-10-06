@@ -152,11 +152,12 @@ variation is `agm cloud push-replay --mode statistical`.
 
 ## 8. Managed prompts
 
-**Unreleased.** Verified on 2026-10-05 against the `agenomic-python` branch
-`feat/managed-prompts` (c3616ef); none of it is in `agenomic` v0.1.3. Plan it
+**Unreleased.** Verified on 2026-10-06 against the `agenomic-python` branch
+`feat/managed-prompts` (07c58c6); none of it is in `agenomic` v0.1.3. Plan it
 only when the project can pin that branch, and record it as unreleased in the
-report. Python only: the TypeScript SDK and `agm` have no managed prompt
-surface (capability matrix §11).
+report. This section is Python only: the TypeScript SDK and `agm` have
+smaller managed prompt surfaces, with no LangGraph adapter, scanner, importer
+or runner (capability matrix §11).
 
 The path from prompts in code to pinned prompts:
 
@@ -164,7 +165,8 @@ The path from prompts in code to pinned prompts:
 2. `agenomic-py prompts import`: prompts and slot declarations in Agenomic
    Cloud, with a `write` key.
 3. A candidate release pins each slot to one prompt version; a signed-in
-   person approves and promotes it in Agenomic Cloud.
+   person approves and promotes it in Agenomic Cloud. An experiment (8.12)
+   can compare it with the current release first.
 4. `bind_langgraph` at runtime, with a `read` key: every thread runs on the
    release it was first bound to.
 
@@ -223,12 +225,15 @@ agenomic-py prompts import prompt-report.json --agent-id <agent uuid> \
   agent that has none; a stale value is refused with
   `agent_prompt_slots_conflict`.
 - Exit codes: 0, 1 (refused or unreachable; the error code is printed) and 2
-  (usage, no `AGENOMIC_ENDPOINT`, unreadable file). A missing
-  `AGENOMIC_API_KEY` is not caught locally: the request goes out without a
-  key and the command exits 1.
-- The CLI is the only import path: `client.prompts` has no import,
-  declaration file or runtime registration call yet. This path was not run
-  against a live registry (capability matrix §11).
+  (usage, a missing `AGENOMIC_ENDPOINT` or `AGENOMIC_API_KEY`, an unreadable
+  file).
+- From Python, `client.prompts.import_report(report, agent_id=...)` returns
+  the same plan, and `client.prompts.apply_import` applies it with the
+  plan's `import_id`, its `plan_digest` and `items=plan.decisions()`.
+  `plan_declarations` and `apply_declarations` take an
+  `agenomic.prompts_file/v1` file, and `register_runtime` plans the import
+  of live LangChain templates. No import path was run against a live
+  registry (capability matrix §11).
 - Nothing rewrites the code. After the import, change each node by hand to
   read its slot (8.4).
 
@@ -244,9 +249,10 @@ agenomic-py prompts import prompt-report.json --agent-id <agent uuid> \
   release.
 - A new manifest is a candidate release created in Agenomic Cloud. A
   signed-in person other than its author approves it, and a signed-in person
-  promotes it on a channel. The SDK and `agm` have no call for slots,
-  candidates, approval, promotion or rollback, and an API key can never
-  approve or promote.
+  promotes it on a channel. The SDKs have no call for slots, candidates,
+  approval, promotion or rollback, `agm channels promote` and `rollback`
+  only print where a signed-in person completes the move, and an API key
+  can never approve or promote.
 - Local mode simulates releases for tests: `Client()` without `base_url`,
   then `client.prompts.local.create_release(agent_id, {slot: "prm_x:N"})`
   and `client.prompts.local.move_channel(...)`. Examples 12 to 16 in
@@ -324,8 +330,11 @@ result = managed.invoke(state, {"configurable": {"thread_id": "ticket-1001"}})
   default cache is in memory, so after a restart an existing thread
   continues only with a disk cache (`AGENOMIC_PROMPT_CACHE_DIR` or
   `PromptCache(directory)`). An online `bind_langgraph` reads
-  `GET /v1/whoami`, so it raises `registry_unavailable` in a process that
-  starts during the outage; an offline bundle (8.8) needs no registry.
+  `GET /v1/whoami`, so in a process that starts during the outage it raises
+  `registry_unavailable` unless the client knows its workspace
+  (`AGENOMIC_WORKSPACE_ID` or `workspace_id=`). It then binds with its
+  credential check pending and serves cached bindings only. An offline
+  bundle (8.8) needs no registry.
   Nothing falls back to a bundle, a cached latest version or an inline
   string.
 - Checkpoint metadata carries `agenomic_binding_id`,
@@ -469,3 +478,54 @@ assert metadata["agenomic_release_id"] == EXPECTED_RELEASE_ID
 Then confirm that no node calls `get_config()`, that every model call in a
 managed node passes `config_for`, and that nothing left in code is reported
 as managed.
+
+### 8.12 Experiment runner
+
+An experiment compares candidate releases with a baseline on a frozen
+dataset. It runs in Agenomic Cloud with the `prompts.experiments`
+capability, and its trials run on the project's machines, through a runner
+that serves the same graph:
+
+```python
+import os
+
+from agenomic.experiments import ExperimentRunner, GraphTarget
+
+
+def trial_graph(ctx):
+    return build_graph().compile(
+        checkpointer=ctx.checkpointer, store=ctx.store
+    )
+
+
+runner = ExperimentRunner(
+    targets={
+        AGENT_ID: GraphTarget(
+            factory=trial_graph,
+            runtime_digest=os.environ["AGENT_RUNTIME_DIGEST"],
+        )
+    }
+)
+```
+
+```sh
+export AGENOMIC_ENDPOINT=https://<registry>
+export AGENOMIC_RUNNER_TOKEN=agr_...
+agenomic-py experiment serve --target support_agent.runner:runner
+```
+
+- A workspace owner registers the runner in Agenomic Cloud and receives its
+  `agr_` token once. The token works on the runner routes only, and the
+  runner reads it from `AGENOMIC_RUNNER_TOKEN`, never from a flag.
+- The factory compiles a new graph for every trial with `ctx.checkpointer`
+  and `ctx.store` (`isolation_violation` otherwise) and returns it unbound:
+  the runner binds each trial itself (`factory_returned_bound_graph`).
+  Nodes read prompts through `prompts_for(config)`, as in 8.4.
+- `runtime_digest` is the bundle hash of the agent bundle the runner
+  serves. Agenomic Cloud cannot check it.
+- `local_assignment` and `runner.run_trial` run one trial offline against
+  the local registry. `agenomic-py experiment snapshot` freezes a thread of
+  the project's own checkpointer into a counterfactual case (example 17).
+- `client.experiments` creates, checks, launches and reads experiments.
+  Datasets, runner registration and evidence live in the web app and the
+  HTTP API. Full guide: `agenomic-python/docs/experiments.md`.
