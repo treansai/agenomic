@@ -39,8 +39,9 @@ forbidden_files=(
 # umbrella README explains the split) are listed here explicitly.
 # Prose (Markdown) may name the private repositories; lockfiles list public
 # crate names that embed them (agenomic-cloud-client); test fixtures under a
-# `fixtures` directory are deliberately fake key material.
-allow_paths_re='(^|/)(README\.md|AGENTS\.md|CHANGELOG\.md|[^/]+\.md|Cargo\.lock|docs/architecture/repository-strategy\.md|scripts/ci/proprietary-leak-check\.sh|\.github/CODEOWNERS|\.github/workflows/[^/]+|scripts/github/.*)$|(^|/)fixtures/'
+# `fixtures` directory are deliberately fake key material. The licence table
+# classifies the private components by name only, with no path.
+allow_paths_re='(^|/)(README\.md|AGENTS\.md|CHANGELOG\.md|[^/]+\.md|Cargo\.lock|docs/architecture/repository-strategy\.md|scripts/ci/proprietary-leak-check\.sh|scripts/license/packages\.tsv|\.github/CODEOWNERS|\.github/workflows/[^/]+|scripts/github/.*)$|(^|/)fixtures/'
 
 tracked() { git -C "$root" ls-files -z --recurse-submodules 2>/dev/null || git -C "$root" ls-files -z; }
 
